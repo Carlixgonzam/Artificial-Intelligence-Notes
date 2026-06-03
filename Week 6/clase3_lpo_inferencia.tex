@@ -1,0 +1,35 @@
+% Clase 3 — LPO e Inferencia
+% Lectura: AIMA Cap. 8-9
+\section{LPO e Inferencia I}
+
+\subsection{Bases de Conocimiento en LPO}
+
+Las bases de conocimiento en LPO pueden expresar relaciones complejas de forma compacta, a diferencia de la lógica proposicional.
+
+\subsection{Unificación}
+
+Para aplicar reglas de inferencia en LPO se necesita \textbf{unificar} expresiones:
+
+$$\text{UNIFY}(\alpha, \beta) = \theta \text{ tal que } \text{SUBST}(\theta, \alpha) = \text{SUBST}(\theta, \beta)$$
+
+Algoritmo: recorre la estructura de ambas expresiones, construyendo sustituciones. Devuelve \textit{fallo} si no hay unificador.
+
+\subsection{Inferencia con Cuantificadores}
+
+\begin{itemize}
+    \item \textbf{Instanciación universal}: $\forall x\ \alpha(x) \vdash \alpha(c)$ para cualquier constante $c$.
+    \item \textbf{Instanciación existencial}: $\exists x\ \alpha(x) \vdash \alpha(k)$ donde $k$ es una nueva constante de Skolem.
+    \item \textbf{Skolemización}: eliminar cuantificadores existenciales introduciendo constantes/funciones de Skolem.
+\end{itemize}
+
+\subsection{Forma Normal de Clausura (CNF en LPO)}
+
+Pasos para convertir a CNF:
+\begin{enumerate}
+    \item Eliminar bicondicionales e implicaciones.
+    \item Mover $\neg$ hacia adentro (De Morgan, reglas de cuantificadores).
+    \item Estandarizar variables.
+    \item Skolemizar.
+    \item Eliminar cuantificadores universales.
+    \item Distribuir $\lor$ sobre $\land$.
+\end{enumerate}

@@ -1,0 +1,90 @@
+% Clase 1 — Contexto, Historia IA y Agentes Inteligentes
+% Lectura: AIMA Cap. 1-2
+\section{Contexto e Historia de la IA}
+
+\subsection{Impacto de la IA en el mundo real}
+
+La IA impacta múltiples sectores: economía, política, ley y derecho, trabajo, ciencia, salud y educación.
+
+\subsection{¿Qué es la Inteligencia Artificial?}
+
+Existen cuatro enfoques para definir la IA:
+
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Pensamiento humano} & \textbf{Pensamiento racional} \\
+Modelos cognitivos & Leyes del pensamiento (lógica) \\
+\hline
+\textbf{Actuar humanamente} & \textbf{Actuar racionalmente} \\
+Test de Turing & Agentes racionales \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{conceptbox}
+La IA moderna se enfoca en \textbf{agentes racionales}: entidades que perciben su entorno y actúan para maximizar su medida de desempeño esperada.
+\end{conceptbox}
+
+\subsection{Historia de la IA}
+
+% Agrega aquí los hitos históricos de la primera clase
+
+\section{Agentes Inteligentes}
+% Lectura: AIMA Cap. 2
+
+\subsection{¿Qué es un Agente?}
+
+\begin{definition}[Agente]
+Un agente es cualquier entidad que \textbf{percibe} su ambiente mediante \textbf{sensores} y \textbf{actúa} sobre él mediante \textbf{actuadores}.
+\end{definition}
+
+La función del agente mapea percepciones a acciones: $f: P^* \rightarrow A$
+
+\subsection{Racionalidad}
+
+Un agente racional selecciona la acción que maximiza su \textbf{medida de desempeño} esperada, dado su conocimiento actual.
+
+Depende de:
+\begin{enumerate}
+    \item La medida de desempeño
+    \item El conocimiento previo del entorno
+    \item Las acciones disponibles
+    \item La secuencia de percepciones hasta el momento
+\end{enumerate}
+
+\subsection{Descripción PEAS}
+
+Para caracterizar el ambiente de una tarea se usa PEAS:
+\begin{itemize}
+    \item \textbf{P}erformance (Medida de desempeño)
+    \item \textbf{E}nvironment (Entorno)
+    \item \textbf{A}ctuators (Actuadores)
+    \item \textbf{S}ensors (Sensores)
+\end{itemize}
+
+\subsection{Naturaleza de los Ambientes}
+
+\begin{tabular}{ll}
+\toprule
+\textbf{Dimensión} & \textbf{Valores posibles} \\
+\midrule
+Observabilidad & Completamente observable / Parcialmente observable \\
+Agentes & Un solo agente / Multiagente \\
+Determinismo & Determinista / Estocástico \\
+Episodicidad & Episódico / Secuencial \\
+Dinamismo & Estático / Dinámico \\
+Tiempo & Discreto / Continuo \\
+Conocimiento & Conocido / Desconocido \\
+\bottomrule
+\end{tabular}
+
+\subsection{Tipos de Agentes}
+
+\begin{enumerate}
+    \item \textbf{Agente de reflejo simple}: actúa según la percepción actual (reglas condición-acción).
+    \item \textbf{Agente de reflejo basado en modelos}: mantiene un estado interno del mundo.
+    \item \textbf{Agente basado en objetivos}: considera metas para elegir acciones.
+    \item \textbf{Agente basado en utilidad}: maximiza una función de utilidad.
+    \item \textbf{Agente que aprende}: mejora su desempeño con la experiencia.
+\end{enumerate}

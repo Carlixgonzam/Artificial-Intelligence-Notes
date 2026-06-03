@@ -1,0 +1,35 @@
+% Clase 2 — Lógica de Primer Orden
+% Lectura: AIMA Cap. 8
+\section{Lógica de Primer Orden (LPO)}
+
+\subsection{Sintaxis}
+
+Elementos de LPO:
+\begin{itemize}
+    \item \textbf{Constantes}: $Juan$, $UNIANDES$, \ldots
+    \item \textbf{Variables}: $x, y, z, \ldots$
+    \item \textbf{Predicados}: $Estudiante(x)$, $Mayor(x, y)$
+    \item \textbf{Funciones}: $Padre(x)$, $Suma(x, y)$
+    \item \textbf{Cuantificadores}: $\forall$ (universal), $\exists$ (existencial)
+    \item \textbf{Conectivos}: $\neg, \land, \lor, \Rightarrow, \Leftrightarrow$
+\end{itemize}
+
+\subsection{Semántica}
+
+Un \textbf{modelo} en LPO especifica:
+\begin{itemize}
+    \item El dominio de objetos
+    \item La interpretación de constantes, predicados y funciones
+\end{itemize}
+
+\subsection{Cuantificadores}
+
+$$\forall x\ P(x) \equiv \neg \exists x\ \neg P(x)$$
+$$\exists x\ P(x) \equiv \neg \forall x\ \neg P(x)$$
+
+\begin{alertbox}
+$\forall x\ (P(x) \Rightarrow Q(x))$ es diferente de $\forall x\ (P(x) \land Q(x))$.
+El cuantificador universal normalmente usa $\Rightarrow$; el existencial usa $\land$.
+\end{alertbox}
+
+% Agrega aquí ejemplos de traducción entre lenguaje natural y LPO

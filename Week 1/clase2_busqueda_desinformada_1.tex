@@ -1,0 +1,44 @@
+% Clase 2 — Búsqueda Desinformada (parte 1)
+% Lectura: AIMA Secciones 3.1–3.3
+\section{Búsqueda Desinformada I: Formulación del Problema}
+
+\subsection{Formulación de un Problema de Búsqueda}
+
+\begin{definition}[Problema de búsqueda]
+Un problema de búsqueda se define con cinco componentes:
+\begin{enumerate}
+    \item \textbf{Estado inicial}: $s_0$
+    \item \textbf{Modelo de transición}: $\text{RESULT}(s, a) \rightarrow s'$
+    \item \textbf{Función de costo de acción}: $c(s, a, s')$
+    \item \textbf{Test de meta}: $\text{IS-GOAL}(s) \rightarrow \{T, F\}$
+    \item \textbf{Espacio de estados}: grafo de todos los estados alcanzables
+\end{enumerate}
+\end{definition}
+
+La \textbf{solución} es una secuencia de acciones que lleva del estado inicial a un estado meta. Una \textbf{solución óptima} minimiza el costo total del camino.
+
+\subsection{Nodos vs. Estados}
+
+Un \textbf{nodo} en el árbol de búsqueda contiene:
+\begin{itemize}
+    \item El estado que representa
+    \item El nodo padre
+    \item La acción que generó el nodo
+    \item El costo del camino $g(n)$
+    \item La profundidad
+\end{itemize}
+
+\subsection{Medidas de Desempeño de Algoritmos}
+
+\begin{tabular}{ll}
+\toprule
+\textbf{Criterio} & \textbf{Descripción} \\
+\midrule
+Completitud & ¿Encuentra solución si existe? \\
+Optimalidad & ¿Encuentra la solución de menor costo? \\
+Complejidad en tiempo & Nodos generados/expandidos \\
+Complejidad en espacio & Nodos en memoria simultáneamente \\
+\bottomrule
+\end{tabular}
+
+Los parámetros usuales son $b$ (factor de ramificación), $d$ (profundidad de la solución más superficial) y $m$ (profundidad máxima del árbol).

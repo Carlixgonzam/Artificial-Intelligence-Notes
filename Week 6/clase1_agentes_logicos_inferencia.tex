@@ -1,0 +1,31 @@
+% Clase 1 — Agentes Lógicos: Inferencia Proposicional
+% Lectura: AIMA Cap. 7
+\section{Agentes Lógicos II: Inferencia Proposicional}
+
+\subsection{Reglas de Inferencia}
+
+\begin{tabular}{ll}
+\toprule
+\textbf{Regla} & \textbf{Forma} \\
+\midrule
+Modus Ponens & $\alpha \Rightarrow \beta,\ \alpha \vdash \beta$ \\
+Modus Tollens & $\alpha \Rightarrow \beta,\ \neg\beta \vdash \neg\alpha$ \\
+Resolución & $(\ell_1 \lor \cdots \lor \ell_k),\ (\neg\ell_1 \lor m_1 \lor \cdots) \vdash (m_1 \lor \cdots)$ \\
+\bottomrule
+\end{tabular}
+
+\subsection{Resolución}
+
+Algoritmo de inferencia completo para lógica proposicional en CNF:
+\begin{enumerate}
+    \item Convertir KB $\land \neg\alpha$ a CNF.
+    \item Aplicar resolución hasta obtener la cláusula vacía (contradicción) o no poder seguir.
+    \item Si se obtiene contradicción $\Rightarrow$ KB $\models \alpha$.
+\end{enumerate}
+
+\subsection{DPLL y WalkSAT}
+
+\begin{itemize}
+    \item \textbf{DPLL}: backtracking completo sobre asignaciones de verdad, con propagación de cláusulas unitarias.
+    \item \textbf{WalkSAT}: búsqueda local incompleta, eficaz en la práctica para instancias satisfacibles.
+\end{itemize}

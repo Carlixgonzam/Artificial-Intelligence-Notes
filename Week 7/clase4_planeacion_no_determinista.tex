@@ -1,0 +1,26 @@
+% Clase 4 — Planeación en Ambientes No Deterministas
+% Lectura: AIMA Secciones 11.5–11.7
+\section{Planeación en Ambientes No Deterministas}
+
+\subsection{Ambientes No Deterministas y Condicionales}
+
+Cuando las acciones tienen efectos inciertos, se necesitan \textbf{planes condicionales} que incluyan ramificaciones según el resultado de las acciones.
+
+\begin{itemize}
+    \item \textbf{Plan de búsqueda AND-OR}: los nodos AND representan contingencias del entorno; los nodos OR representan elecciones del agente.
+    \item Un plan condicional es una solución si cubre todas las ramas.
+\end{itemize}
+
+\subsection{Planeación Parcialmente Observable}
+
+Con observabilidad parcial el agente mantiene un \textbf{estado de creencia} (belief state) y ejecuta acciones de recopilación de información.
+
+\subsection{Planeación Continua y de Ejecución}
+
+\begin{itemize}
+    \item \textbf{Monitoreo de ejecución}: detectar discrepancias entre el plan y la realidad.
+    \item \textbf{Replaneación}: adaptar el plan ante fallos o nueva información.
+    \item \textbf{Agentes reactivos-deliberativos}: combinan planeación a largo plazo con respuesta reactiva.
+\end{itemize}
+
+% Agrega aquí ejercicios de planeación condicional

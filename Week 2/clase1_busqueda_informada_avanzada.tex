@@ -1,0 +1,37 @@
+% Clase 1 — Búsqueda Informada Avanzada
+% Lectura: AIMA Sección 3.6
+\section{Búsqueda Informada Avanzada}
+
+\subsection{Búsqueda con Memoria Acotada}
+
+\subsubsection{Iterative Deepening A* (IDA*)}
+Versión de A* que usa IDDFS con el valor de corte $f(n) = g(n) + h(n)$.
+\begin{itemize}
+    \item Espacio: $\bigO{bd}$
+    \item Completo y óptimo (con $h$ admisible)
+\end{itemize}
+
+\subsubsection{Recursive Best-First Search (RBFS)}
+Mantiene el mejor valor alternativo $f$ en cada nivel de recursión.
+\begin{itemize}
+    \item Espacio: $\bigO{bd}$
+    \item Puede reexpandir nodos (regenera sub-árboles olvidados)
+\end{itemize}
+
+\subsubsection{SMA* (Simplified Memory-Bounded A*)}
+Usa toda la memoria disponible; descarta el nodo con mayor $f$ cuando la memoria está llena.
+
+\subsection{Heurísticas: Dominancia y Creación}
+
+\begin{definition}[Dominancia]
+$h_2$ domina a $h_1$ si $h_2(n) \geq h_1(n)$ para todo $n$ y ambas son admisibles. Una heurística dominante expande menos nodos.
+\end{definition}
+
+Formas de construir heurísticas admisibles:
+\begin{enumerate}
+    \item \textbf{Relajación del problema}: eliminar restricciones del problema original.
+    \item \textbf{Bases de datos de patrones}: precomputar costos exactos de subproblemas.
+    \item \textbf{Máximo de heurísticas}: $h(n) = \max(h_1(n), h_2(n))$
+\end{enumerate}
+
+% Ejemplo: 8-puzzle — heurísticas de piezas fuera de lugar vs. distancia Manhattan

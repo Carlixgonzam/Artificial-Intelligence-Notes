@@ -1,0 +1,41 @@
+% Clase 4 — Introducción a Búsqueda Informada
+% Lectura: AIMA Sección 3.5
+\section{Búsqueda Informada: Heurísticas}
+
+\subsection{Función Heurística}
+
+\begin{definition}[Heurística]
+$h(n)$ es una función que estima el costo desde el nodo $n$ hasta la meta más cercana. Debe ser \textbf{admisible}: nunca sobreestima el costo real.
+\end{definition}
+
+\begin{alertbox}
+Una heurística es \textbf{admisible} si $h(n) \leq h^*(n)$ para todo $n$, donde $h^*(n)$ es el costo real al llegar a la meta.
+\end{alertbox}
+
+\subsection{Greedy Best-First Search}
+
+Expande el nodo que parece más cercano a la meta según $h(n)$.
+\begin{itemize}
+    \item Función de evaluación: $f(n) = h(n)$
+    \item \textbf{No es óptimo} ni completo en general.
+    \item Rápido en la práctica, puede quedar atrapado en mínimos locales.
+\end{itemize}
+
+\subsection{A*}
+
+Combina el costo real del camino y la heurística:
+$$f(n) = g(n) + h(n)$$
+
+\begin{itemize}
+    \item $g(n)$: costo del camino desde inicio hasta $n$
+    \item $h(n)$: estimación del costo desde $n$ hasta la meta
+    \item \textbf{Completo} y \textbf{óptimo} si $h$ es admisible (búsqueda en árbol) o consistente (búsqueda en grafo).
+\end{itemize}
+
+\begin{definition}[Consistencia / Monotonía]
+$h$ es consistente si para todo nodo $n$ y sucesor $n'$:
+$$h(n) \leq c(n, a, n') + h(n')$$
+La consistencia implica admisibilidad.
+\end{definition}
+
+% Agrega aquí ejemplos de heurísticas: distancia Manhattan, euclidiana, etc.

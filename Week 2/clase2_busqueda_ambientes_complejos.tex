@@ -1,0 +1,48 @@
+% Clase 2 — Búsqueda en Ambientes Complejos
+% Lectura: AIMA Cap. 4 (Hill Climbing + Algoritmos Genéticos)
+\section{Búsqueda en Ambientes Complejos}
+
+\subsection{Búsqueda Local}
+
+A diferencia de la búsqueda sistemática, la búsqueda local opera sobre un \textbf{estado actual} sin mantener el camino recorrido. Útil cuando el objetivo es el estado mismo (no el camino).
+
+\subsection{Hill Climbing (Ascenso de Colina)}
+
+\begin{algorithm}[H]
+\caption{Hill-Climbing}
+\begin{algorithmic}[1]
+\State $\text{current} \leftarrow \text{estado inicial}$
+\Loop
+    \State $\text{neighbor} \leftarrow$ mejor sucesor de $\text{current}$
+    \If{$f(\text{neighbor}) \leq f(\text{current})$}
+        \Return $\text{current}$
+    \EndIf
+    \State $\text{current} \leftarrow \text{neighbor}$
+\EndLoop
+\end{algorithmic}
+\end{algorithm}
+
+\textbf{Problemas}:
+\begin{itemize}
+    \item Máximos locales (no globales)
+    \item Mesetas (\textit{plateaus}) y crestas
+\end{itemize}
+
+\textbf{Variantes}: Hill climbing estocástico, reinicio aleatorio, \textit{simulated annealing}.
+
+\subsection{Simulated Annealing}
+
+Permite movimientos malos con probabilidad $e^{\Delta E / T}$ donde $T$ decrece con el tiempo. Garantiza convergencia al óptimo global si $T$ baja suficientemente despacio.
+
+\subsection{Algoritmos Genéticos}
+
+Inspirados en la evolución biológica. Operan sobre una \textbf{población} de individuos (estados codificados como cadenas).
+
+Operadores:
+\begin{enumerate}
+    \item \textbf{Selección}: individuos con mayor aptitud (\textit{fitness}) tienen más probabilidad de reproducirse.
+    \item \textbf{Cruzamiento} (\textit{crossover}): combina dos individuos para producir descendencia.
+    \item \textbf{Mutación}: cambia aleatoriamente genes con baja probabilidad.
+\end{enumerate}
+
+% Agrega aquí ejemplo del problema de las N-reinas con AG

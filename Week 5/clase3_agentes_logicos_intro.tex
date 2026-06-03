@@ -1,0 +1,28 @@
+% Clase 3 — Introducción a Agentes Lógicos
+% Lectura: AIMA Cap. 7
+\section{Agentes Lógicos: Introducción}
+
+\subsection{Agentes Basados en Conocimiento}
+
+Un agente basado en conocimiento mantiene una \textbf{base de conocimiento} (KB) y utiliza \textbf{inferencia} para decidir qué acción tomar.
+
+$$\text{KB} \vdash \alpha \quad \text{(KB implica } \alpha\text{)}$$
+
+\subsection{Lógica Proposicional}
+
+Conectivos lógicos: $\neg$, $\land$, $\lor$, $\Rightarrow$, $\Leftrightarrow$
+
+\begin{itemize}
+    \item Una \textbf{oración} es \textit{válida} (tautología) si es verdadera en todos los modelos.
+    \item Una oración es \textit{satisfacible} si es verdadera en al menos un modelo.
+    \item \textbf{Consecuencia lógica}: $KB \models \alpha$ si en todo modelo donde KB es verdadera, $\alpha$ también lo es.
+\end{itemize}
+
+\subsection{Formas Normales}
+
+\begin{itemize}
+    \item \textbf{CNF} (Forma Normal Conjuntiva): conjunción de cláusulas (disyunciones de literales).
+    \item \textbf{DNF} (Forma Normal Disyuntiva): disyunción de conjunciones.
+\end{itemize}
+
+% Agrega aquí el ejemplo del Mundo del Wumpus
