@@ -1,0 +1,35 @@
+% Clase 1 — Redes Bayesianas
+% Lectura: AIMA Cap. 13
+\section{Redes Bayesianas}
+
+\begin{definition}[Red Bayesiana]
+Una red bayesiana es un grafo acíclico dirigido (DAG) donde:
+\begin{itemize}
+    \item Cada nodo representa una variable aleatoria.
+    \item Los arcos representan dependencias directas.
+    \item Cada nodo $X_i$ tiene una CPT: $P(X_i \mid \text{Parents}(X_i))$.
+\end{itemize}
+\end{definition}
+
+\subsection{Semántica}
+
+La distribución conjunta se factoriza como:
+$$P(X_1, \ldots, X_n) = \prod_{i=1}^{n} P(X_i \mid \text{Parents}(X_i))$$
+
+\subsection{Inferencia Exacta}
+
+\begin{itemize}
+    \item \textbf{Enumeración}: suma sobre todas las variables ocultas. Exponencial en el peor caso.
+    \item \textbf{Eliminación de variables}: orden de eliminación importa para la eficiencia.
+\end{itemize}
+
+\subsection{Inferencia Aproximada}
+
+\begin{itemize}
+    \item \textbf{Muestreo directo}: muestrea según el orden topológico de la red.
+    \item \textbf{Muestreo por rechazo}: descarta muestras inconsistentes con la evidencia.
+    \item \textbf{Ponderación por verosimilitud}: fija la evidencia, pondera las muestras.
+    \item \textbf{MCMC / Gibbs Sampling}: muestrea cada variable condicionada al resto.
+\end{itemize}
+
+% Agrega aquí ejemplo: red de alarma (Burglar-Earthquake-Alarm-JohnCalls-MaryCalls)

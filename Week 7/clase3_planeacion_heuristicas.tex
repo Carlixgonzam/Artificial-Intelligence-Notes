@@ -1,0 +1,29 @@
+% Clase 3 — Planeación: Heurísticas y Planeación Jerárquica
+% Lectura: AIMA Secciones 11.3–11.4
+\section{Planeación: Heurísticas y Planeación Jerárquica}
+
+\subsection{Heurísticas para Planeación}
+
+\subsubsection{Problema Relajado (ignore preconditions / ignore delete lists)}
+\begin{itemize}
+    \item \textbf{Ignore preconditions}: todas las acciones son aplicables. Heurística: número mínimo de acciones para satisfacer la meta.
+    \item \textbf{Ignore delete lists}: no se eliminan fluentes. Problema de planeación relajado resoluble en tiempo polinomial.
+\end{itemize}
+
+\subsubsection{Planning Graph y Heurística FF}
+Un \textbf{grafo de planeación} alterna capas de literales y acciones:
+\begin{itemize}
+    \item Capa de literales $S_i$: literales alcanzables en $i$ pasos.
+    \item Capa de acciones $A_i$: acciones aplicables en el paso $i$.
+\end{itemize}
+La heurística FF usa el plan del grafo relajado como estimador.
+
+\subsection{Planeación Jerárquica (HTN)}
+
+\textbf{Hierarchical Task Network (HTN)}: descompone tareas abstractas en subtareas más concretas.
+
+\begin{itemize}
+    \item \textbf{Tareas primitivas}: acciones directamente ejecutables.
+    \item \textbf{Tareas abstractas}: se descomponen mediante métodos.
+    \item Ventaja: permite incorporar conocimiento de dominio para guiar la búsqueda.
+\end{itemize}

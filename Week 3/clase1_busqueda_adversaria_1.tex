@@ -1,0 +1,30 @@
+% Clase 1 — Búsqueda Adversaria y Juegos (parte 1)
+% Lectura: AIMA Cap. 6
+\section{Búsqueda Adversaria y Juegos I}
+
+\subsection{Juegos como Problemas de Búsqueda}
+
+Un \textbf{juego} de dos jugadores, suma cero, de información perfecta se define como:
+\begin{itemize}
+    \item $S_0$: estado inicial
+    \item $\text{PLAYER}(s)$: qué jugador mueve en estado $s$
+    \item $\text{ACTIONS}(s)$: movimientos legales
+    \item $\text{RESULT}(s, a)$: estado resultante
+    \item $\text{IS-TERMINAL}(s)$: test de fin de juego
+    \item $\text{UTILITY}(s, p)$: valor numérico del estado terminal para el jugador $p$
+\end{itemize}
+
+\subsection{Minimax}
+
+MAX maximiza, MIN minimiza la utilidad.
+
+$$\text{MINIMAX}(s) = \begin{cases}
+\text{UTILITY}(s, MAX) & \text{si IS-TERMINAL}(s) \\
+\max_{a} \text{MINIMAX}(\text{RESULT}(s,a)) & \text{si PLAYER}(s) = MAX \\
+\min_{a} \text{MINIMAX}(\text{RESULT}(s,a)) & \text{si PLAYER}(s) = MIN
+\end{cases}$$
+
+\begin{itemize}
+    \item Completo (en árbol finito) y óptimo contra un oponente óptimo.
+    \item Tiempo: $\bigO{b^m}$ \quad Espacio: $\bigO{bm}$
+\end{itemize}

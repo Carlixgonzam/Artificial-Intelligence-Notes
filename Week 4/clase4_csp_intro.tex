@@ -1,0 +1,34 @@
+% Clase 4 — Introducción a CSP
+% Lectura: AIMA Cap. 5
+\section{Problemas de Satisfacción de Restricciones (CSP)}
+
+\begin{definition}[CSP]
+Un CSP se define por:
+\begin{itemize}
+    \item $X = \{X_1, \ldots, X_n\}$: variables
+    \item $D = \{D_1, \ldots, D_n\}$: dominios de cada variable
+    \item $C$: conjunto de restricciones sobre subconjuntos de variables
+\end{itemize}
+La \textbf{solución} es una asignación completa y consistente.
+\end{definition}
+
+\subsection{Tipos de Restricciones}
+
+\begin{itemize}
+    \item \textbf{Unarias}: $X_i \in \{v_1, v_2\}$
+    \item \textbf{Binarias}: $X_i \neq X_j$
+    \item \textbf{Globales}: involucran más de 2 variables (ej. \texttt{AllDiff})
+\end{itemize}
+
+\subsection{Búsqueda con Retroceso (Backtracking)}
+
+Asigna valores a variables una por una; retrocede cuando se viola una restricción.
+
+\textbf{Heurísticas para mejorar el backtracking}:
+\begin{enumerate}
+    \item \textbf{MRV} (Minimum Remaining Values): elegir la variable con menos valores posibles.
+    \item \textbf{Degree heuristic}: variable con más restricciones sobre variables no asignadas.
+    \item \textbf{Least Constraining Value}: valor que deja más opciones para las demás variables.
+\end{enumerate}
+
+% Agrega aquí ejemplo: coloreado de grafos, N-reinas, Sudoku

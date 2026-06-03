@@ -1,0 +1,56 @@
+% Clase 3 — Búsqueda Desinformada (parte 2)
+% Lectura: AIMA Sección 3.4
+\section{Búsqueda Desinformada II: Algoritmos}
+
+\subsection{Breadth-First Search (BFS)}
+
+\begin{itemize}
+    \item Expande el nodo más \textbf{superficial} primero (FIFO).
+    \item \textbf{Completo}: sí (si $b$ finito).
+    \item \textbf{Óptimo}: sí, si todos los costos de paso son iguales.
+    \item Tiempo: $\bigO{b^d}$ \quad Espacio: $\bigO{b^d}$
+\end{itemize}
+
+\subsection{Depth-First Search (DFS)}
+
+\begin{itemize}
+    \item Expande el nodo más \textbf{profundo} primero (LIFO).
+    \item \textbf{Completo}: no en árbol infinito; sí en grafo finito.
+    \item \textbf{Óptimo}: no.
+    \item Tiempo: $\bigO{b^m}$ \quad Espacio: $\bigO{bm}$
+\end{itemize}
+
+\subsection{Depth-Limited Search y Iterative Deepening (IDDFS)}
+
+IDDFS ejecuta DFS con límite de profundidad creciente $l = 0, 1, 2, \ldots$
+
+\begin{itemize}
+    \item Combina las ventajas de BFS (completo, óptimo si costos iguales) con las de DFS (espacio lineal).
+    \item Tiempo: $\bigO{b^d}$ \quad Espacio: $\bigO{bd}$
+\end{itemize}
+
+\subsection{Uniform-Cost Search (UCS)}
+
+\begin{itemize}
+    \item Expande el nodo con menor \textbf{costo de camino} $g(n)$ (cola de prioridad).
+    \item Equivale a BFS cuando todos los costos son iguales.
+    \item \textbf{Completo}: sí (si costos $> \epsilon > 0$).
+    \item \textbf{Óptimo}: sí.
+    \item Tiempo y espacio: $\bigO{b^{1+\lfloor C^*/\epsilon \rfloor}}$, donde $C^*$ es el costo óptimo.
+\end{itemize}
+
+\subsection{Comparativa Búsqueda Desinformada}
+
+\begin{center}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Algoritmo} & \textbf{Completo} & \textbf{Óptimo} & \textbf{Tiempo} & \textbf{Espacio} \\
+\midrule
+BFS      & Sí & Sí* & $b^d$     & $b^d$ \\
+DFS      & No & No  & $b^m$     & $bm$ \\
+IDDFS    & Sí & Sí* & $b^d$     & $bd$ \\
+UCS      & Sí & Sí  & $b^{C^*/\epsilon}$ & $b^{C^*/\epsilon}$ \\
+\bottomrule
+\multicolumn{5}{l}{\small *Óptimo si costos de paso son iguales}
+\end{tabular}
+\end{center}

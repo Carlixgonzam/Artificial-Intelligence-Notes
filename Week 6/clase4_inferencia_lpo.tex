@@ -1,0 +1,34 @@
+% Clase 4 — Inferencia en LPO
+% Lectura: AIMA Cap. 9
+\section{Inferencia en LPO II}
+
+\subsection{Encadenamiento hacia adelante (Forward Chaining)}
+
+Aplica reglas de la forma $P_1 \land \cdots \land P_n \Rightarrow Q$ para derivar nuevos hechos hasta alcanzar la meta.
+\begin{itemize}
+    \item Completo para bases de conocimiento de \textbf{cláusulas de Horn}.
+    \item Dirigido por los datos.
+\end{itemize}
+
+\subsection{Encadenamiento hacia atrás (Backward Chaining)}
+
+Parte de la meta y trabaja hacia atrás buscando hechos o submetas.
+\begin{itemize}
+    \item Completo para cláusulas de Horn.
+    \item Base de Prolog.
+    \item Puede ciclar si no se controla.
+\end{itemize}
+
+\subsection{Resolución en LPO}
+
+Generaliza la resolución proposicional usando unificación:
+
+$$\frac{\ell_1 \lor \cdots \lor \ell_k \quad \neg m_1 \lor \cdots \lor \neg m_j}{\text{SUBST}(\theta, \ell_1 \lor \cdots \lor m_j)}$$
+
+donde $\theta = \text{UNIFY}(\ell_i, m_k)$.
+
+\begin{itemize}
+    \item \textbf{Refutación por resolución}: completa para LPO (Teorema de Completitud de Gödel).
+\end{itemize}
+
+% Agrega aquí ejemplos de encadenamiento y resolución

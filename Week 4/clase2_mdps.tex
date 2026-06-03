@@ -1,0 +1,41 @@
+% Clase 2 — Procesos de Decisión de Markov (MDPs)
+% Lectura: AIMA Cap. 16
+\section{Procesos de Decisión de Markov (MDPs)}
+
+\begin{definition}[MDP]
+Un MDP se define por la tupla $(S, A, P, R, \gamma)$:
+\begin{itemize}
+    \item $S$: conjunto de estados
+    \item $A$: conjunto de acciones
+    \item $P(s' \mid s, a)$: modelo de transición (probabilístico)
+    \item $R(s, a, s')$: función de recompensa
+    \item $\gamma \in [0, 1]$: factor de descuento
+\end{itemize}
+\end{definition}
+
+\subsection{Propiedad de Markov}
+
+$$P(s_{t+1} \mid s_t, a_t) = P(s_{t+1} \mid s_0, a_0, \ldots, s_t, a_t)$$
+
+El futuro solo depende del estado presente, no del historial.
+
+\subsection{Política y Utilidad}
+
+\begin{itemize}
+    \item \textbf{Política} $\pi(s)$: función que asigna una acción a cada estado.
+    \item \textbf{Utilidad} (retorno descontado): $U = \sum_{t=0}^{\infty} \gamma^t R_t$
+    \item \textbf{Política óptima} $\pi^*$: maximiza la utilidad esperada.
+\end{itemize}
+
+\subsection{Ecuación de Bellman}
+
+$$U^*(s) = \max_a \sum_{s'} P(s' \mid s, a) \left[ R(s, a, s') + \gamma U^*(s') \right]$$
+
+\subsection{Algoritmos de Solución}
+
+\begin{itemize}
+    \item \textbf{Value Iteration}: actualiza $U(s)$ iterativamente hasta convergencia.
+    \item \textbf{Policy Iteration}: alterna entre evaluación de política y mejora de política.
+\end{itemize}
+
+% Agrega aquí ejemplo del mundo de cuadrículas (grid world)

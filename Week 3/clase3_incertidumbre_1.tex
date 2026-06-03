@@ -1,0 +1,34 @@
+% Clase 3 — Razonamiento bajo Incertidumbre (parte 1)
+% Lectura: AIMA Cap. 12
+\section{Razonamiento bajo Incertidumbre I}
+
+\subsection{Probabilidad como Base del Razonamiento}
+
+Cuando el entorno es \textbf{parcialmente observable} o \textbf{estocástico}, se usa probabilidad para representar la incertidumbre.
+
+\begin{conceptbox}
+La \textbf{probabilidad a priori} (o incondicional) $P(A)$ representa el grado de creencia sin ninguna evidencia adicional.
+
+La \textbf{probabilidad condicional} $P(A \mid B) = \dfrac{P(A \land B)}{P(B)}$ representa el grado de creencia dado que $B$ es verdadero.
+\end{conceptbox}
+
+\subsection{Regla de Bayes}
+
+$$P(A \mid B) = \frac{P(B \mid A) \cdot P(A)}{P(B)}$$
+
+\begin{itemize}
+    \item $P(A)$: probabilidad a priori de $A$ (hipótesis)
+    \item $P(B \mid A)$: verosimilitud de la evidencia $B$ dado $A$
+    \item $P(B)$: probabilidad marginal de $B$ (normalizador)
+    \item $P(A \mid B)$: probabilidad a posteriori
+\end{itemize}
+
+\subsection{Distribuciones de Probabilidad}
+
+Para variables aleatorias discretas, la \textbf{distribución conjunta completa} especifica $P(X_1, X_2, \ldots, X_n)$ para todos los valores posibles. De ella se puede derivar cualquier probabilidad por marginalización y condicionamiento.
+
+\textbf{Marginalización}: $P(X) = \sum_y P(X, Y=y)$
+
+\textbf{Independencia}: $X \perp Y \Leftrightarrow P(X, Y) = P(X) \cdot P(Y)$
+
+\textbf{Independencia condicional}: $X \perp Y \mid Z \Leftrightarrow P(X \mid Y, Z) = P(X \mid Z)$

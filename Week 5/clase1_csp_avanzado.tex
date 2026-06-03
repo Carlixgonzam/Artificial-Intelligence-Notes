@@ -1,0 +1,32 @@
+% Clase 1 — CSP: Propagación de Restricciones y Búsqueda Local
+% Lectura: AIMA Cap. 5
+\section{CSP Avanzado: Propagación de Restricciones}
+
+\subsection{Consistencia de Arco (AC-3)}
+
+Una variable $X_i$ es \textbf{arco-consistente} con $X_j$ si para cada valor en $D_i$ existe algún valor en $D_j$ que satisface la restricción binaria.
+
+\textbf{AC-3} reduce dominios iterativamente hasta que no quedan inconsistencias o algún dominio queda vacío (sin solución).
+
+\begin{itemize}
+    \item Complejidad: $\bigO{cd^3}$ donde $c$ = número de restricciones, $d$ = tamaño del dominio.
+\end{itemize}
+
+\subsection{Forward Checking}
+
+Al asignar un valor a $X_i$, eliminar de los dominios de las variables vecinas no asignadas todos los valores inconsistentes.
+
+\subsection{Estructura del Grafo de Restricciones}
+
+Si el grafo de restricciones es un \textbf{árbol}, el CSP puede resolverse en $\bigO{nd^2}$ sin backtracking.
+
+\textbf{Cutset conditioning}: encontrar un conjunto de variables cuya eliminación convierte el grafo en árbol.
+
+\subsection{Búsqueda Local para CSP}
+
+\textbf{Min-conflicts}: en cada paso, reparar la variable con más conflictos eligiendo el valor que minimiza conflictos.
+
+\begin{itemize}
+    \item Muy eficiente en la práctica para CSPs grandes.
+    \item No garantiza completitud.
+\end{itemize}

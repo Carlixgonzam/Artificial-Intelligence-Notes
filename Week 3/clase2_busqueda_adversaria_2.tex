@@ -1,0 +1,36 @@
+% Clase 2 — Búsqueda Adversaria y Juegos (parte 2)
+% Lectura: AIMA Cap. 6
+\section{Búsqueda Adversaria y Juegos II}
+
+\subsection{Poda Alfa-Beta ($\alpha$-$\beta$)}
+
+Elimina ramas del árbol que no pueden afectar la decisión final.
+
+\begin{itemize}
+    \item $\alpha$: mejor valor que MAX puede garantizar (lo que MAX ya tiene)
+    \item $\beta$: mejor valor que MIN puede garantizar (lo que MIN ya tiene)
+    \item Poda: si $v \geq \beta$ en nodo MAX $\Rightarrow$ cortar; si $v \leq \alpha$ en nodo MIN $\Rightarrow$ cortar.
+\end{itemize}
+
+Con orden perfecto de movimientos: $\bigO{b^{m/2}}$ (duplica la profundidad manejable).
+
+\subsection{Juegos con Incertidumbre: Expectiminimax}
+
+Para juegos con elementos aleatorios (dados) se agregan \textbf{nodos azar}:
+
+$$\text{EXPECTIMINIMAX}(s) = \sum_r P(r) \cdot \text{EXPECTIMINIMAX}(\text{RESULT}(s, r))$$
+
+\subsection{Funciones de Evaluación}
+
+En juegos reales no se puede explorar hasta el final. Se usa una \textbf{función de evaluación heurística} $\text{EVAL}(s)$ que estima la utilidad desde un estado no terminal.
+
+Características de una buena función de evaluación:
+\begin{itemize}
+    \item Debe concordar con la utilidad real en estados terminales.
+    \item Rápida de calcular.
+    \item Debe reflejar las probabilidades reales de ganar.
+\end{itemize}
+
+\subsection{Monte Carlo Tree Search (MCTS)}
+
+Estrategia basada en simulaciones aleatorias (\textit{rollouts}). Cuatro fases: selección, expansión, simulación, retropropagación.

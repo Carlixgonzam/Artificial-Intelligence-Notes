@@ -1,0 +1,47 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# LaTeX build artifacts
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+*.bbl
+*.blg
+*.idx
+*.ilg
+*.ind
+*.nav
+*.snm
+*.vrb
+*.bcf
+*.run.xml
+*.dvi
+*.xdv
+*-blx.bib
+
+# Minted (code highlighting)
+_minted*/
+*.pyc
+
+# Compiled PDFs (keep source, ignore output)
+# Uncomment the line below if you want to ignore generated PDFs
+# *.pdf
+
+# Editor temporary files
+*.swp
+*.swo
+*~
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Overleaf sync
+.overleaf/

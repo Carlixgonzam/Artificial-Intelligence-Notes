@@ -1,0 +1,33 @@
+% Clase 2 — Planeación: Fundamentos
+% Lectura: AIMA Secciones 11.1–11.2
+\section{Planeación: Definición y Algoritmos Generales}
+
+\subsection{¿Qué es la Planeación?}
+
+Un agente planificador construye una \textbf{secuencia de acciones} para lograr un objetivo en un entorno modelado.
+
+\begin{definition}[Problema de Planeación STRIPS/PDDL]
+\begin{itemize}
+    \item \textbf{Estado}: conjunción de fluentes (literales positivos/negativos).
+    \item \textbf{Acción}: definida por precondiciones y efectos.
+    \item \textbf{Meta}: conjunción de fluentes que deben ser verdaderos.
+\end{itemize}
+\end{definition}
+
+\subsection{Representación PDDL}
+
+\begin{lstlisting}[language=, caption={Ejemplo de acción en PDDL}]
+(:action Fly
+ :parameters (?p - Plane ?from ?to - Airport)
+ :precondition (and (At ?p ?from) (Plane ?p)
+                    (Airport ?from) (Airport ?to))
+ :effect (and (At ?p ?to) (not (At ?p ?from))))
+\end{lstlisting}
+
+\subsection{Algoritmos de Búsqueda para Planeación}
+
+\begin{itemize}
+    \item \textbf{Búsqueda hacia adelante} (\textit{progression}): empieza en el estado inicial y aplica acciones.
+    \item \textbf{Búsqueda hacia atrás} (\textit{regression}): empieza desde la meta y aplica acciones inversas.
+    \item \textbf{SATPLAN}: codifica el problema de planeación como SAT y usa un solucionador SAT.
+\end{itemize}
