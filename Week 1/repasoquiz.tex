@@ -5,6 +5,60 @@
 \begin{enumerate}
 	\item Un agente que percibe solo información parcial acerca del estado no puede ser perfectamente racional: \textbf{Falso} la racionalidad depende de la expectativa de rendimiento dada la información que el agente posee (el historial de percepciones), no del éxito omnisciente o del estado real completo del mundo. Un agente en un entorno parcialmente observable puede tomar la decisión óptima posible con base en sus percepciones parciales y seguir siendo perfectamente racional.
 	\item Existen ambientes de tareas en lso que ningun agente de reflejo puro se puede comportar de forma racional: \textbf{Verdadero} en entornos parcialemnte observables, las acciones optimas suelen depender de la historia o de estados ocultos que no se peuden deducir unicamente de la percepcion actual; un agente de reflejo puro carece de memoria y puede entrar en bucles infinitos.
+	\item Es posible para un agente dado ser perfectamente racional en dos ambientes de tarea diferentes: \textbf{Verdadero}, si las acciones requeridas para maximizar la medida de rendimiento en ambos entornos coinciden ante las mismas percepciones, el agente será racional en ambos.
+	\item Todos los agentes son racionales en un ambiente no observable: \textbf{Falso}, que el entorno sea no observable no significa que cualquier acción sea buena. El agente debe actuar basandose en estimaciones o en su conocimiento inicial (suponer estados). Un agente que tome decisiones autodestructivas a ciegas seguirá siendo irracional, mientras que uno racional calculará la secuencia de acciones que estadisticamente tenga mayor probabilidad de exito.
+	\item Un agente de poker perfectamente racional nunca pierde: \textbf{Falso}, el poker es un entorno estocastico y de informacion oculta, un agente perfectamente racional tomara la decisión con \textit{el mayor valor esperado}, pero la suerte puede hacer que pierda manos o partidas.
 	
 \end{enumerate}
+
+\subsection{Descripción PEAS y caracterizacion del ambiente:  Rutina de piso de gimnasia}
+
+\textbf{P (Rendimiento/performance)}: Puntuación de los jueces (dificultad, ejecución, fluidez, sincronización, técnica, no salirse del tapete)
+\textbf{E (Entorno/Environment)}: El tapete de gimnasia, la gravedad, las capacidades fisicas del cuerpo del gimnasta.
+\textbf{A (Actuadores/Actuatprs)}: Musculos (piernas, brazos, torso) para realizar giros, saltos, mortales y transiciones.
+\textbf{S (Sensores/Sensors)}: Sistema vestibular (equilibrio), propiocepción, vision.
+
+\subsection{Caracterización del ambiente: Rutina de piso de gimnasia}
+
+\textit{Continuo o discreto?} \textbf{Continuo} ya que involucra las posiciones corporales, fuerzas y tiempos que varían continuamente.
+
+\textit{Total o parcialmente observable?} \textbf{Totalmente observable} ya que el agente conoce su propio estado fisico y la posición del piso.
+
+\textit{Determinista o estocástico?} \textbf{Estocástico} ya que a nivel fisico real, pequeñas variaciones o fatiga muscular pueden alterar el resultado de un salto.
+
+\textit{Episodico o Secuencial?} \textbf{Secuencial} un mal salto inicial arruina el equilibrio para el siguiente movimiento.
+
+\textit{Estatico o dinámico?} \textbf{Estático} ya que el tapete no cambia de lugar por si mismo mientras se ejecuta la rutina, aunque el tiempo corre.
+
+\textit{Un agente o multiagente?} \textbf{agente} ya que es una rutina individual.
+
+
+\subsection{Descripción PEAS y caracterizacion del ambiente:  Jugar Futbol}
+
+\textbf{P (Rendimiento/performance)}: Goles anotados, evitar goles en contra, ganar el partido, precisión de pases, posesión del balón.
+\textbf{E (Entorno/Environment)}: Campo de juego, 11 rivales, 10 compañeros de equipo, condiciones climaticas.
+\textbf{A (Actuadores/Actuatprs)}: Movimiento de las piernas(correr, patear, cambiar de dirección), torso, cabeza.
+\textbf{S (Sensores/Sensors)}: Visión, audición, tacto/propiocepción.
+
+\subsection{Caracterización del ambiente: Jugar futbol}
+
+\textit{Continuo o discreto?} \textbf{Continuo} ya que involucra las posiciones corporales, fuerzas y tiempos que varían continuamente.
+
+\textit{Total o parcialmente observable?} \textbf{parcialmente observable} ya que no se puede ver lo que pasa a la espalda del jugador sin voltear.
+
+\textit{Determinista o estocástico?} \textbf{Estocástico} fisica del balo, rebotes impredecibles.
+
+\textit{Episodico o Secuencial?} \textbf{Secuencial} 
+
+\textit{Estatico o dinámico?} \textbf{Dinámico} ya que los rivales y compañeros se mueven continuamente mientras el agente decide.
+
+\textit{Un agente o multiagente?} \textbf{multiagente} ya que es competitivo con los rivales y cooperativo con los compañeros.
+
+
+\section{Formulación de problemas de busqueda}
+
+\begin{enumerate}
+	\item \texttt{Por qué la formulación debe estar guiada por una formulacion de la meta?} En un entorno real, los detalles del mundo son infinitos. Si no se define primero un \textbf{objetivo} claro, el agente no sabrá que aspectos del mundo son relevantes y cuales debe ignorar \textit{(abstraccion)}. la meta sirve como criterio para establecer que constituye un estado satisfactorio, lo que permite acotar las acciones posibles a considerar y estructurar la función de costo y la prueba de meta. Sin ella el espacio de estados sería inmanejable.
+\end{enumerate}
+
 
