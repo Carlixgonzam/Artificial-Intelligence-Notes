@@ -59,6 +59,89 @@
 
 \begin{enumerate}
 	\item \texttt{Por qué la formulación debe estar guiada por una formulacion de la meta?} En un entorno real, los detalles del mundo son infinitos. Si no se define primero un \textbf{objetivo} claro, el agente no sabrá que aspectos del mundo son relevantes y cuales debe ignorar \textit{(abstraccion)}. la meta sirve como criterio para establecer que constituye un estado satisfactorio, lo que permite acotar las acciones posibles a considerar y estructurar la función de costo y la prueba de meta. Sin ella el espacio de estados sería inmanejable.
+	\item \texttt{El problema de las 6 cajas de cristal con llaves y una banana}
+	
+	El \textbf{estado} es un entero  $i \in \{1,2,3,4,5,6\}$ que representa la caja mas alta que el agente ha logrado desbloquear hasta el momento; o equivalentemente el numero de la caja que puede abrir actualmente porque tiene su llave. Inicialmente se tiene la llave de la primera.
+	El \textbf{estado inicial} \textit{S0} = 1 (el agente tiene la llave de la caja 1)
+	El \textbf{modelo de transición} si el agente ejecuta \textbf{Abrir caja i}:
+	\begin{itemize}
+		\item Si $1 <= i <= 5$, el agente obtiene la llave de la caja i + 1, por lo que el nuevo estado es i + 1.
+		\item Si i=6, el agente abre la ultima caja y obtiene la banana
+	\end{itemize}
+	
+	La \textbf{prueba de meta} El estado actual es igual a haber abierto la caja 6 y tener la banana? Estado=6
+	
+	El \textbf{costo de camino} es que cada acción de abrir una caja tiene un costo uniforme de 1.
+	
+	\item Cuadricula \textit{n x n} para pintar el piso:
+	El \textbf{Estado}: una tupla $\langle (x,y), \,P \rangle$ donde:
+	\textit{(x,y)} son las coordenadas actuales del agente ($1 \leq x, y \leq n$)
+	\textit{P} es un conjunto de pares ordenados o una matriz booleana de tamaño n x n que registra cuales celdas ya han sido pintadas. Las celdas que contienen "pozos sin fondo" no forman parte de las celdas transitables ni requiren pintura.
+	El \textbf{Estado inicial} $\langle (x_0, y_0),\, P_0 \rangle$, donde \textit{$(x_0, y_0)$} es la celda de inicio y $P_0 = \emptyset$
+	Las \textbf{acciones} son \texttt{pintar} (válido si $(x,y) \notin P$), y \texttt{moverse} a $(x',y')$ donde $(x',y')$ es adyacente ortogonalmente a (x,y) y es una celda de piso sin pintar.
+	El \textbf{modelo de transicion} es si \textit{Accion}: \textbf{Pintar} el nuevo estado es $\langle (x,y), \,P \cup {(x,y)} \rangle$. si \textit{Accion}: \textbf{Moverse} a (x',y') el nuevo estado es $\langle (x', y'),\, P_0 \rangle$
+	La \textbf{prueba meta} es que el conjunto P contiene \textit{todas} las celdas transitables de la cuadricula que correspondian a pisos sin pintar.
+	
 \end{enumerate}
 
+\section{Busqueda no informada: Algoritmos}
+
+\begin{enumerate}
+	\item DFS siempre expande al menos tantos nodos como la busqueda A* con una heurística admisible. \textbf{Falso}, DFS es un algoritmo propenso a la "suerte" del orden alfabetico/de expansión. SI la meta se encuentra en la primera rama profunda que DFS decide explorar, puede encontrarla de manera inmediata expandiendo muchisimos menos nodos que los que A* requeriría para verificar la optimicidad a lo ancho del arbol.
+	\item \textit{h(n) = 0} es una heuristica admisible para el problema del 8-puzzle. \textbf{Verdadero}, una heuristica es admisible si nunca sobreestima el costo real hacia la meta $h(n) \leq h*(n)$. Dado que el costo real restante siempre es mayor igual a 0, definir \textit{h(n) = 0} para todo nodo es una subestimación válida y segura. al usar \textit{h(n) = 0}, el algoritmo A* se degrada exactamente al algoritmo de UCS.
+	\item A* no es util en robotica porque las percepciones, los estados y las acciones son continuos. \textbf{Falso}, aunque los espacio fisicos reales son continuos, en robotica se aplican tecnicas de \textit{discretización}, por ejemplo la descomposición en celdas, mapas de ocupacion o grafos de visibilidad. Una vez el espacio continuo se modela como un grafo discreto de posiciones validas, A* es uno de los algoritmos mas utilizados para la planeación de trayectorias.
+	\item La busqueda en amplitud BFS es completa incluso si se permiten costos de paso iguales a cero. \textbf{Verdadero} BFS expande de los nodos capa por capa segun su \texttt{profundidad}, de manera completamente independiente de los costos numericos acumulados $g(n)$. siempre que el factor de ramificación \textit{b} sea finito, BFS explorará de manera exhaustiva todos los nodos a profundidad \textit{d} antes de pasar a $d + 1$, garantizando encontrar la meta si esta existe.
+	\item La distancia Manhattan es una heurística admisible para el problema de mover una torre en ajedrez de A a B en el menor numero de movimientos. \textbf{Falso}, la distancia Manhattan cuenta cuantas casillas ortogonales individuales separan dos puntos paso a paso. sin embargo, una torre de ajedrez puede saltar de un extremo al otro del tablero en \textbf{un solo movimiento} si la fila o columna está despejada. Por ende, el costo real puede ser de solo 1 movimiento, mientras que la distancia Manhattan daria un valor mucho mayor. Al sobreestimar el costo real, la heuristica no es admisible.
+\end{enumerate}
+
+\subsection{Simulación de Estrategias de Búsqueda en Grafos }
+
+Reglas estipuladas: Los empates se resuelven \textbf{alfabéticamente}. En búsqueda de grafos se mantiene una lista de cerrados, expandiendo cada estado una sola vez.
+
+
+\begin{lstlisting}[caption={Representación del grafo de transiciones}]
+       [A] --(4)--> [C] --(2)--> [Goal]
+      ^   \          |            ^
+     /     \         |            |
+   (2)      \        |            |
+   /         v       v            |
+[Start]-----(5)----> [D] --------(5)
+   \                 ^
+   (3)              /
+     \             /
+      v           /
+       [B] --(4)-/
+\end{lstlisting}
+
+\begin{itemize}
+    \item[\textbf{a.}] \textbf{Búsqueda en Profundidad (DFS)}
+    \begin{itemize}
+        \item \textbf{Frontera inicial (LIFO/Pila):} \texttt{[Start]}
+        \item \textbf{Orden de expansión:} $\text{Start} \rightarrow \text{A} \rightarrow \text{C} \rightarrow \text{D} \rightarrow \text{Goal}$.
+        \item \textbf{Camino devuelto:} $\text{Start} \rightarrow \text{A} \rightarrow \text{C} \rightarrow \text{D} \rightarrow \text{Goal}$.
+    \end{itemize}
+
+    \item[\textbf{b.}] \textbf{Búsqueda en Amplitud (BFS)}
+    \begin{itemize}
+        \item \textbf{Frontera inicial (FIFO/Cola):} \texttt{[Start]}
+        \item \textbf{Orden de expansión:} $\text{Start}, \text{A}, \text{B}, \text{D}$.
+        \item \textbf{Camino devuelto:} $\text{Start} \rightarrow \text{D} \rightarrow \text{Goal}$.
+    \end{itemize}
+
+    \item[\textbf{c.}] \textbf{Búsqueda de Costo Uniforme (UCS)}
+    \begin{itemize}
+        \item \textbf{Análisis de pasos en frontera de prioridad:}
+
+        \begin{lstlisting}
+Paso 1: Expandir Start (g=0). Frontera: [(A, g=2), (B, g=3), (D, g=5)]
+Paso 2: Expandir A (g=2).     Frontera: [(B, g=3), (D, g=5), (C, g=6)]
+Paso 3: Expandir B (g=3).     Frontera: [(D, g=5), (C, g=6)]
+Paso 4: Expandir D (g=5).     Frontera: [(C, g=6), (Goal, g=10)]
+Paso 5: Expandir C (g=6).     Frontera: [(Goal, g=8)]
+Paso 6: Extraer Goal (g=8). Fin.
+        \end{lstlisting}
+        \item \textbf{Orden de expansión:} $\text{Start}, \text{A}, \text{B}, \text{D}, \text{C}, \text{Goal}$.
+        \item \textbf{Camino devuelto:} $\text{Start} \rightarrow \text{A} \rightarrow \text{C} \rightarrow \text{Goal}$ (Costo total óptimo: 8).
+    \end{itemize}
+\end{itemize}
 
