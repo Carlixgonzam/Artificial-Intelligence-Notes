@@ -145,3 +145,119 @@ Paso 6: Extraer Goal (g=8). Fin.
     \end{itemize}
 \end{itemize}
 
+\subsection{Codigo de BFS}
+\begin{lstlisting}
+def breadth_first_search(start, goal, get_neighbors):
+	frontera = deque()
+	frontera.append((start, [start]))
+	visitados = set()
+	visitados.add(start)
+	nodos_explorados = []
+	while frontera:
+		posi, camino = frontera.popleft()
+		nodos_explorados.append(posi)
+		if posi == goal:
+			return camino, nodos_explorados
+		for veci, costo in get_neighbors(posi):
+			if veci not in visitados:
+				visitados.add(veci)
+				if veci == goal:
+					return camino + [veci], nodos_explorados
+				frontera.append((veci, camino + [veci]))
+	return [], nodos_explorados
+\end{lstlisting}
+
+
+\subsection{Codigo de DFS}
+
+\begin{lstlisting}
+
+def depth_first_search(start, goal, get_neighbors):
+
+    fronterita = []
+    fronterita.append((start, [start]))
+    visitados = set()
+    visitados.add(start)
+    nodos_explorados = []
+    while fronterita:
+        pos, camin = fronterita.pop()
+        nodos_explorados.append(pos)
+        if pos == goal:
+            return camin, nodos_explorados
+        for vecino, costo in get_neighbors(pos):
+            if vecino not in visitados:
+                visitados.add(vecino)
+                if vecino == goal:
+                    return camin + [vecino], nodos_explorados
+                fronterita.append((vecino, camin + [vecino]))
+    return [], nodos_explorados
+\end{lstlisting}
+
+\subsection{Codigo de UCS}
+
+\begin{lstlisting}
+def uniform_cost_search(start, goal, get_neighbors):
+    frontera = [(0, 0, start, [start])]
+    visitados = set()
+    contador = 0
+    nodos_explorados = []
+    while frontera:
+        costo, _, pos, camino = heapq.heappop(frontera)
+        if pos in visitados:
+            continue
+        visitados.add(pos)
+        nodos_explorados.append(pos)
+        if pos == goal:
+            return camino, nodos_explorados
+        for vecinos, costico_actual in get_neighbors(pos):
+            if vecinos not in visitados:
+                contador += 1
+                heapq.heappush(
+                    frontera,
+                    (costo + costico_actual, contador, vecinos, camino + [vecinos]),
+                )
+
+    return [], nodos_explorados
+\end{lstlisting}
+
+\subsection{Codigo de bidireccional}
+
+\begin{lstlisting}
+def bidirectional_search(start, goal, get_neighbors):
+    fronterainicio = deque()
+    fronterainicio.append((start, [start]))
+    fronteragoal = deque()
+    fronteragoal.append((goal, [goal]))
+    visitadosinicio = {start: [start]}
+    visitadosgoal = {goal: [goal]}
+    exploradosi = []
+    exploradosg = []
+
+    while fronterainicio and fronteragoal:
+        i, camino_i = fronterainicio.popleft()
+        exploradosi.append(i)
+        if i in visitadosgoal:
+            return camino_i + visitadosgoal[i][::-1][1:], {
+                "start": exploradosi,
+                "goal": exploradosg,
+            }
+        for vecino, cos in get_neighbors(i):
+            if vecino not in visitadosinicio:
+                visitadosinicio[vecino] = camino_i + [vecino]
+                fronterainicio.append((vecino, camino_i + [vecino]))
+        j, camino_j = fronteragoal.popleft()
+        exploradosg.append(j)
+        if j in visitadosinicio:
+            return camino_j + visitadosinicio[j][::-1][1:], {
+                "start": exploradosi,
+                "goal": exploradosg,
+            }
+        for veci, costo in get_neighbors(j):
+            if veci not in visitadosgoal:
+                visitadosgoal[veci] = camino_j + [veci]
+                fronteragoal.append((veci, camino_j + [veci]))
+    return [], {"start": exploradosi, "goal": exploradosg}
+\end{lstlisting}
+
+
+
