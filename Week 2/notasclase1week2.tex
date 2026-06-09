@@ -1,0 +1,65 @@
+\section{Heuristicas}
+Es una función que estima que tan cerca esta un estado a su meta, guía para el camino con mayor promesa. Las heurísticas es que no sobrestimen los costos. Si dos estados tienen una evaluacipon heuristica similar -> preferiblemente examinar estado mas cercano a la raiz en grafo de estados.
+
+\begin{definition}
+Una \textbf{heurística} es una función que estima que tan cerca está un estado $n$ de la meta, diseñada especificamente para un problema de búsqueda particular.
+
+\[
+  h : \text{Estados} \;\longrightarrow\; \mathbb{R}_{\geq 0}
+\]
+En el contexto de búsqueda informada, $h(n)$ representa el \textbf{costo estimado} del camino mas barato desde el estado $n$ hasta la meta mas cercana. Por convención, $h(\text{meta}) = 0$
+\end{definition}
+
+En términos generales, una heurística es el estudio de metodos y reglas de descubrimiento e invención. En IA, nos interesa como \emph{aproximación informada} que:
+
+\begin{itemize}
+	\item usa conocimiento del dominio para guiar la busqueda.
+	\item descarta/remueve posibilidades de solución poco prometedoras
+	\item no garantiza exactitud, pero si eficiencia práctica
+\end{itemize}
+
+\begin{itemize}
+		\item \textbf{distancia en linea recta}: útil en mapas de carreteras. $h(n) = $ distancia euclideana de $n$ a la meta.
+		\item \textbf{distancia manhattan}: útil en grillas. $h(n) = \sum_i |x_i - x_{\text{meta}} | + |y_i -  y_{\text{meta}}|$
+		\item \textbf{celdas fuera de lugar}: útil en el 8-puzzle. $h(n) = $ número de piezas no en su posición goal.
+\end{itemize}
+
+\subsection{Repaso algoritmos de búsqueda informada}
+Los algoritmos estudiados en la clase anterior usan $h(n)$ de distintas formas:
+
+\begin{center}
+\begin{tabular}{lcc}
+  \toprule
+  \textbf{Algoritmo} & \textbf{Función de evaluación} & \textbf{Estrategia} \\
+  \midrule
+  Greedy Best-First & $f(n) = h(n)$          & Minimizar costo restante \\
+  A*               & $f(n) = g(n) + h(n)$   & Minimizar costo total    \\
+  A* con peso      & $f(n) = g(n) + w \cdot h(n)$ & Sesgar hacia la meta \\
+  \bottomrule
+\end{tabular}
+\end{center}
+ 
+donde $g(n)$ es el costo acumulado desde el inicio hasta $n$
+(\emph{backward}), y $h(n)$ es la estimación del costo restante
+(\emph{forward}).
+
+\section{Admisibilidad, Monotonicidad, Informedness(Desigualdad triangular)}
+
+\subsection{Admisibilidad}
+\begin{definition}[Admisibilidad]
+Una heurística $h$ es \textbf{admisible} (u \emph{optimista}) si nunca sobreestima el costo real para llegar a la meta.
+
+\[
+  \boxed{h(n) \;\leq\; \hstar{n}, \quad \forall n}
+\]
+donde  $\hstar{n}$ es el costo verdadero del camino optimo desde $n$ hasta la meta.
+\end{definition}
+
+\textbf{Consecuencia clave:} si $h$ es admisible, A* sobre arbol de busqueda es \emph{optimo}: nunca descarta la solución optima porque nunca penaliza en exceso ningun nodo.
+
+\begin{example}[Admisibilidad en BFS]
+BFS usa $f(n) = g(n)$ (equivalente a $h(n) = 0$ para todo $n$). Como
+$0 \leq h^*(n)$ siempre, $h \equiv 0$ es admisible (aunque trivial e
+ineficiente).
+\end{example}
+
