@@ -91,3 +91,59 @@ es encontrar el \textbf{maximo global} o minimo dependiendo de la formulacion.
 
 \subsection{Simulated Annealing (recorrido simulado)}
 
+\begin{definition}[Simulated Annealing]
+    Variante de Hill-Climbing que permite movimientos que \emph{empeoran} la funcion objetivo con una probabilidad que decrece con el tiempo. La probabilidad
+    de aceptar un empeoramiento $\Delta E < 0$ es 
+    \[
+    P = e^{\,\Delta E / T},
+    \]
+    donde $T$ es la \textbf{temperatura} actual del sistema.
+    
+\end{definition}
+
+\begin{enumerate}
+    \item Estado actual $\leftarrow$ estado inicial.
+    \item Para cada tiempo $t = 1, 2, \ldots$:
+      \begin{enumerate}
+        \item $T \leftarrow \text{Schedule}(t)$. Si $T = 0$,
+              \textbf{terminar}.
+        \item Elegir un vecino $v$ al azar.
+        \item $\Delta E \leftarrow f(v) - f(\text{actual})$.
+        \item Si $\Delta E > 0$: moverse a $v$ (mejora).
+        \item Si $\Delta E \leq 0$: moverse a $v$ con probabilidad
+              $e^{\Delta E/T}$.
+      \end{enumerate}
+  \end{enumerate}
+
+\noindent La intuición es la del proceso físico de \emph{recocido:} a temperatura alta se permite mucha exploración (movimientos aleatorios);
+al enfriarse el sistema, el algoritmo se vuelve mas exigente y converge a un minimo(maximo).
+
+\begin{theorem}[Comportamiento según temperatura]
+    \begin{itemize}
+        \item $T$ alta $\Rightarrow$ \textbf{exploracion}: se aceptan muchos movimiento que empeoran
+        \item $T$ baja $\Rightarrow$ \textbf{explotación}: comportamiento similar a Hill-Climbing
+        \item Si $T$ decrece lo suficientemente lento, Simulated Annealing encuentra el óptimo global con probabilidad 1 (en el limite)
+    \end{itemize}
+    
+\end{theorem}
+
+\begin{example}[Traza de simulateed annealing]
+    \begin{center}
+        \begin{tabular}{ccc}
+          \toprule
+          Paso & $h$ (conflictos) & $T$ \\
+          \midrule
+          0 & 5 & 100 \\
+          1 & 6 & 100 \\ 
+          2 & 4 & 50  \\
+          3 & 4 & 20  \\
+          4 & 3 & 5   \\
+          5 & 3 & 1   \\
+          6 & 2 & 0.1 \\
+          7 & 0 & 0.01 \\
+          \bottomrule
+        \end{tabular}
+        \end{center}
+    El paso 1 \textbf{empeoró} ($h: 5 \to 6$) pero feu aceptado gracias a la temperatura alta. A partir del paso 5, la temperatura es tan baja que el algoritmo practicamente no 
+    acepta empeoramientos: ya se comporta como hill-climbing
+\end{example}
