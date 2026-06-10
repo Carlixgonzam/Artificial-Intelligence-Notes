@@ -245,3 +245,99 @@ estados con probabilidad proporcional a su $f$, lo que manteine mayor diversidad
         componentes útiles de la solución.
 \end{itemize}
 
+\section{Busqueda local en espacios continuos}
+Cuando el espacio de estados es continuo (las variables toman valores reales), no se puede enumerar vecinos directamente. Se necesitan estrategias especiales.
+\subsection{Discretizar el espacio}
+Crear una grilla rectangular con paso $\delta$. Para un problema con $n$ variables, cada estado tiene $2n$ sucesores (incrementar o decrementar cada variable en $\delta$). Una
+vez discretizado, se aplican los algoritmos de bsuqueda local habituales.
+La discretización intriduce error de aproximación proporcional a $\delta$. Un $\delta$ pequeño mejora la precisión, pero aumenta exponencialmente el numero de puntos a evaluar.
+
+\subsection{Gradiente}
+\begin{definition}[Gradiente]
+    El gradiente $\nabla f(\mathbf{x})$ indica la dirección de mayor
+    crecimiento de $f$ en el punto $\mathbf{x}$. Para $f$ con variables
+    $(x_1, y_1, x_2, y_2, x_3, y_3)$:
+    \[
+      \nabla f = \left(\frac{\partial f}{\partial x_1},
+                       \frac{\partial f}{\partial y_1},
+                       \frac{\partial f}{\partial x_2},
+                       \frac{\partial f}{\partial y_2},
+                       \frac{\partial f}{\partial x_3},
+                       \frac{\partial f}{\partial y_3}\right).
+    \]
+  \end{definition}
+
+La regla de actualización del \textbf{gradiente ascendente} es:
+  \[
+    \mathbf{x} \leftarrow \mathbf{x} + \alpha\,\nabla f(\mathbf{x}),
+  \]
+  donde $\alpha > 0$ es la \emph{tasa de aprendizaje} (paso). El
+  \textbf{gradiente empírico} aproxima las derivadas parciales midiendo
+  el cambio de $f$ entre dos puntos cercanos:
+  \[
+    \frac{\partial f}{\partial x_i} \approx
+    \frac{f(\mathbf{x} + \epsilon\,\mathbf{e}_i) - f(\mathbf{x})}{\epsilon}.
+  \]
+
+\subsection{Newton-raphson}
+Usa información de \textbf{segundo orden} (curvatura) para converger mas rapido. La idea basica en una variable es:
+\[
+  x \leftarrow x - \frac{g(x)}{g'(x)},
+\]
+que encuentra raices de $g$ (equivalente a encontrar el minimo de $f$ cuando $g = f'$). En varias variables, se usa la \textbf{matriz Hessiana}
+$\mathbf{H}_f(\mathbf{x})$ (matriz de segundas derivadas):
+\[
+  \mathbf{x} \leftarrow \mathbf{x} - \mathbf{H}_f^{-1}(\mathbf{x})\,\nabla f(\mathbf{x}).
+\]
+Newton-raphson converge mucho mas rapido que el gradiente puro cuando la funcion es convexa y $\mathbf{H}_f$ es invertible, pero calcular e invertir la 
+Hessiana es costoso para problemas de alta dimension.
+
+
+\subsection{Programacion lineal}
+Cuando $f$ y todas las restricciones son \textbf{lineales}, el problema es de programacion lineal. Las restricciones generan una region factible convexa y el optimo siempre se encuentra en 
+uno de sus \textbf{vertices} (puntos de intersección de las restricciones)
+
+\begin{definition}[conjunto convexo]
+    Un conjunto $S$ es convexo si, para cualquier par de puntos $p, q \in S$, el segmento de linea recta $\overline{pq}$ pertenece completamente a $S$. La región factible de un PL es siemrpe convexa.
+    
+\end{definition}
+
+\begin{example}
+  Restricciones $12x + 8y \leq 240$, $\,6x + 20y \leq 360$,
+  $\,x \geq 0$, $\,y \geq 0$. Los vértices de la región factible son
+  $(0,0)$, $(20,0)$, $(10,15)$ y $(0,18)$. El óptimo de cualquier
+  función objetivo lineal se alcanza en uno de estos puntos.
+\end{example}
+
+
+\section{Busqueda con Acciones no Deterministas}
+\subsection{cuando el mundo responde}
+En los algoritmos (BFS, DFS, A*) las acciones tienen un resultado \textbf{unico} y predecible. Ahora consideramos dos complicaciones:
+\begin{itemize}
+    \item \textbf{Ambiente parcialmente observable:} el agente no sabe exactamente en que estado se encuentra
+    \item \textbf{Ambiente no determinista:} la misma acción puede llevar a varios estados distintos
+\end{itemize}
+
+ 
+\begin{center}
+    \begin{tabular}{lcc}
+      \toprule
+      & Cap.\ 3--4.1 & Cap.\ 4.3 \\
+      \midrule
+      Acción       & resultado único & varios resultados \\
+      El mundo     & obedece         & responde          \\
+      Solución     & plan fijo       & plan condicional  \\
+      Representación & camino        & estrategia        \\
+      \bottomrule
+    \end{tabular}
+    \end{center}
+
+\begin{definition}[estados de creencia]
+    Conjunto de estados en los que el agente \emph{cree} que podria estar, dado lo que ha observado. Ejemplo: ``estoy en $s_1$ o en
+    $s_3$''. Las acciones se planifican para \textbf{todos} los estados
+    del conjunto de creencia.
+
+\end{definition}
+
+
+
