@@ -57,3 +57,37 @@ es encontrar el \textbf{maximo global} o minimo dependiendo de la formulacion.
     \end{enumerate}
 \end{example}
 
+\subsection{Variantes}
+\begin{itemize}
+    \item Steepest-ascent (determinista): evalúa \emph{todos} los vecinos y toma el mejor. Garantiza el mayor avance en cada paso, pero es costoso.
+    \item Stocastic Hill-Climbing: elige al azar entre los vecinos que mejoran el estado actual. Menos cómputo por paso; puede escapar de algunos mesetas.
+    \item First-choice hill-climbing: genera y evalúa vecinos en algún orden, toma el \emph{primero} que mejore. útil cuando el numero de vecinos es muy grande. Ventaja: menos cómputo, desventaja: depende del orden de generación
+    \item Random-restart hill-climbing: al atascarse en un maximo local, elige un nuevo estado inicial aleatorio y repite. Aumenta la probabilidad de encontrar el optimo global, a costa de mas tiempo
+
+\end{itemize}
+
+\subsection{Limitaciones}
+\begin{theorem}[Problemas de hill-climbing]
+    Hill-climbing puede quedar atrapado en:
+    \begin{itemize}
+        \item \textbf{Maximos locales:} pico mas alto que sus vecinos, pero no el maximo global.
+        \item \textbf{Mesetas:} región plana donde todos los vecinos tienen el mismo valor
+        \item \textbf{Crestas:} serie de maximos locales separados por descensos, dificiles de cruzar
+    \end{itemize}
+    Nunca realiza movimientos que \textbf{desciendan} la funcion objetivo.
+    
+\end{theorem}
+
+\begin{example}[Problema de las 8 reinas]
+    \textbf{Estado:} Posición de las 8 reinas, una por columna.
+    $h$ = numero de pares de reinas en conflicto (queremos minimizar)
+    La función objetivo es $f = 28 -h$ (queremos maximizar)
+    \medskip
+    Con el tablero $[6,3,8,5,5,2,1,4]$ y First-Choice: se prueban cambios columna a columna hasta encontrar el primero con menor $h$.
+    \medskip
+    Con Steepest-Ascent a partir de un estado aleatorio, hill-climbing resuelve el 97\,\% de los casos, pero el 3\,\% restante requiere Random-Restart
+    
+\end{example}
+
+\subsection{Simulated Annealing (recorrido simulado)}
+
