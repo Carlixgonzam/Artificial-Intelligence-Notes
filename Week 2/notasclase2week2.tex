@@ -171,3 +171,77 @@ Problema frecuente es los $k$ estados tienden a \emph{converger} al mismo maximo
 estados con probabilidad proporcional a su $f$, lo que manteine mayor diversidad.
 
 
+\subsection{Algoritmos evolutivos}
+
+\begin{definition}[algoritmos evolutivos]
+    Familia de métodos de bsuqueda local que operan sobre una \textbf{población de $k$ soluciones} y las mejoran mediante operaciones inspiradas en la
+    evolución biologica, selección y recombinación (crossover) y mutación.
+\end{definition}
+
+
+\noindent La tabla siguiente compara las cuatro familias vistas:
+ 
+\begin{center}
+\begin{tabular}{lcc}
+  \toprule
+  Algoritmo & Soluciones & Mecanismo extra \\
+  \midrule
+  Hill-Climbing       & 1        & ---                      \\
+  Simulated Annealing & 1        & Azar (temperatura)       \\
+  Local Beam Search   & $k$      & ---                      \\
+  Algoritmos Evolutivos & $k$    & Recombinación + Mutación \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection{Ciclo de vida de un algoritmo evolutivo}
+
+\begin{enumerate}
+    \item \textbf{Generación 0}: crear $k$ soluciones (individuos) aleatorias.
+    \item \textbf{Evaluar}: calcular el \emph{fitness} de cada individuo.
+    \item \textbf{Seleccionar}: elegir los mejores individuos como padres
+          (selección proporcional al fitness, torneo, etc.).
+    \item \textbf{Combinar (Crossover)}: recombinar pares de padres para
+          generar hijos mezclando sus genes.
+    \item \textbf{Mutar}: aplicar cambios aleatorios pequeños a algunos hijos.
+    \item \textbf{Repetir} desde el paso 2 con la nueva generación.
+  \end{enumerate}
+
+\begin{example}[8 Reinas con Algoritmo Evolutivo]
+    \textbf{Representación}: individuo $= [4,6,1,5,2,8,3,7]$ (posición
+    de cada reina en su columna).
+    
+    \textbf{Fitness}: $f = 28 - (\text{pares de reinas en conflicto})$.
+    El máximo posible es 28 (ningún conflicto = solución).
+   
+    \medskip
+    \textbf{Crossover} con punto de corte en la posición 4:
+    \begin{align*}
+      \text{Padre 1:} &\quad [4,6,1,5 \mid 2,8,3,7] \\
+      \text{Padre 2:} &\quad [2,5,7,4 \mid 8,1,6,3] \\[4pt]
+      \text{Hijo 1:}  &\quad [4,6,1,5,8,1,6,3] \\
+      \text{Hijo 2:}  &\quad [2,5,7,4,2,8,3,7]
+    \end{align*}
+   
+    \textbf{Mutación}: cambiar un gen al azar; por ejemplo:
+    $[4,6,1,5,7,1,6,4]$.
+\end{example}
+
+
+\subsection{Parametros y variaciones}
+\begin{itemize}
+    \item \textbf{Tamaño de la población $k$}: poblaciones grandes
+        exploran más pero son más costosas.
+    \item \textbf{Representación del individuo}: binaria, entera,
+        permutaciones, árboles, etc.
+    \item \textbf{Número de padres}: normalmente 2; en algunos esquemas
+        se usan más.
+    \item \textbf{Proceso de selección}: proporcional al fitness,
+        selección por torneo, elitismo.
+    \item \textbf{Punto de crossover}: fijo, aleatorio, multipunto.
+    \item \textbf{Schema}: substring donde algunas posiciones son
+        \emph{comodín} (ej.\ \texttt{246*****}). Los algoritmos
+        evolutivos explotan implícitamente schemas asociados a
+        componentes útiles de la solución.
+\end{itemize}
+
