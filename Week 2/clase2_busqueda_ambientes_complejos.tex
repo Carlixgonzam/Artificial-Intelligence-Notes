@@ -8,19 +8,6 @@ A diferencia de la búsqueda sistemática, la búsqueda local opera sobre un \te
 
 \subsection{Hill Climbing (Ascenso de Colina)}
 
-\begin{algorithm}[H]
-\caption{Hill-Climbing}
-\begin{algorithmic}[1]
-\State $\text{current} \leftarrow \text{estado inicial}$
-\Loop
-    \State $\text{neighbor} \leftarrow$ mejor sucesor de $\text{current}$
-    \If{$f(\text{neighbor}) \leq f(\text{current})$}
-        \Return $\text{current}$
-    \EndIf
-    \State $\text{current} \leftarrow \text{neighbor}$
-\EndLoop
-\end{algorithmic}
-\end{algorithm}
 
 \textbf{Problemas}:
 \begin{itemize}
@@ -45,4 +32,3 @@ Operadores:
     \item \textbf{Mutación}: cambia aleatoriamente genes con baja probabilidad.
 \end{enumerate}
 
-% Agrega aquí ejemplo del problema de las N-reinas con AG

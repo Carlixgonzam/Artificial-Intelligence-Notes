@@ -1,0 +1,59 @@
+\section{Ambientes Complejos}
+En esta sección se involucra la \textbf{relajación de restricciones}, donde hay presentes \emph{problemas, algoritmos, estrategias y problemas no deterministicos}
+\begin{definition}[Problemas de Busqueda]
+    \begin{enumerate}
+        \item Completamente observables
+        \item deterministicos
+        \item Estaticos
+        \item ambientes conocidos
+    \end{enumerate}
+\end{definition}
+
+
+\begin{definition}[Problemas discretos de hallar un buen estado]
+    \begin{enumerate}
+        \item Busqueda hill-climbing
+        \item simulated anealing
+        \item local beam search
+        \item evolutionary algorithms
+    \end{enumerate}
+\end{definition}
+
+Hasta ahora los algoritmos de busqueda (BFS, DFS, UCS, A*) asumen ambientes \textbf{completamente observables}, 
+\textbf{deterministicos}, \textbf{estaticos} y \textbf{conocidos}, y su objetivo es encontrar un \emph{camino} desde el estado inicial hasta la meta.
+
+Sin embargo, hay clases de problemas donde lo que importa no es el camino sino el \textbf{estado final} en si mismo. esta sección 
+estudia tres familias de técnicas para esos casos:
+\begin{enumerate}
+    \item \textbf{Busqueda local en espacios discretos:} Hill-climbing, simulated annealing, local beam search y algortimos evolutivos.
+    \item \textbf{Busqueda local en espacios continuos:} discretización, gradiente empirico, newton-raphson y programacion lineal
+    \item \textbf{Busqueda con acciones no deterministas:} arboles AND-OR y planes condicionales
+\end{enumerate}
+
+En busqueda local \textbf{no se guarda el camino recorrido}; el estado actual es todo lo que importa. Esto reduce dramaticamente el uso de memoria, al costo
+de no garantizar optimalidad global.
+
+\section{Busqueda Local y Problemas de optimización}
+\begin{definition}[busqueda local]
+    Clase de algoritmos que dado un estado actual, generan sus vecinos y se mueven al mejor de ellso segun una \textbf{funcion objetivo}
+    $f: \mathcal{S} \to \mathbb{R}$. no mantienen frontera ni arbol de busqueda completo.
+\end{definition}
+
+El espacio de busqueda se puede visualizar como un \emph{paisaje de estados:} los estados son posiciones horizontales y su valor $f$ es la altura. El objetivo tipico
+es encontrar el \textbf{maximo global} o minimo dependiendo de la formulacion.
+
+\subsection{Hill-Climbing}
+\begin{definition}
+    Mantiene registro de un unico estado actual, y en cada iteración, se desplaza al vecino con \textbf{mayor valor} de $f$. termina cuando ningun vecino supera al estado actual. 
+    Tambien llamado \emph{steepest-ascent} p \emph{busqueda local voraz}
+\end{definition}
+
+\begin{example}[Hill-Climbing clasico]
+    \begin{enumerate}
+        \item Estado actual $\leftarrow$ estado inicial
+        \item Generar todos los vecinos del estado actual
+        \item Si algun vecino tiene $f$ mayor: moverse al mejor vecino y volver a 2
+        \item Si ningun vecino mejora: \textbf{terminar} (maximo local)
+    \end{enumerate}
+\end{example}
+

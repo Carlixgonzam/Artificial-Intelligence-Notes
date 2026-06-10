@@ -63,3 +63,47 @@ $0 \leq h^*(n)$ siempre, $h \equiv 0$ es admisible (aunque trivial e
 ineficiente).
 \end{example}
 
+\begin{theorem}[heuristicas inadmisibles]
+Una heurística \textbf{inadmisible} (pesimista) puede hacer que A* descarte nodos con soluciones óptimas atrapados en la frontera, rompiendo la garantía de optimalidad.
+\end{theorem}
+
+\subsection{Monotonicidad (Consistencia)}
+\begin{definition}[Monotonicidad/consistencia]
+Una heurística $h$ es \textbf{monotonica} o consistente si para todo nodo $n_i$ y cualquier sucesor $n_j$:
+
+\[
+  \boxed{h(n_i) - h(n_j) \;\leq\; \cost{n_i}{n_j}}
+\]
+ 
+equivalentemente,
+\[
+  h(n_i) \;\leq\; \cost{n_i}{n_j} + h(n_j)
+\]
+Además, se requiere $h(\text{meta}) = 0$.
+\end{definition}
+
+Esta condición es mas fuerte que la admisibilidad. Su intuición geometrica es que la heuristica no puede "saltar" hacia atrás mas que el costo real del arco.
+
+\textbf{consecuencias de la consistencia:}
+\begin{itemize}
+  \item El valor de $f(n) = g(n) + h(n)$ es \textbf{no decreciente} a lo
+        largo de cualquier camino: $f(n_j) \geq f(n_i)$ siempre que $n_j$
+        sea sucesor de $n_i$.
+  \item En A* con grafo de búsqueda (eliminación de repetidos), una
+        heurística consistente garantiza que el primer camino encontrado a
+        cada nodo es el óptimo. Por lo tanto, \textbf{no es necesario
+        revisitar nodos}, lo que reduce la complejidad temporal.
+\end{itemize}
+
+La consistencia $\Rightarrow$ admisibilidad; la implicación no es recíproca en general.
+
+
+\subsection{desigualdad del triangulo}
+
+La consistencia es esencialmente la \emph{desigualdad del triangulo} aplicada a las estimaciones heuristicas:
+
+\[
+  d(A, C) \;\leq\; d(A, B) + d(B, C)
+\]
+ 
+
