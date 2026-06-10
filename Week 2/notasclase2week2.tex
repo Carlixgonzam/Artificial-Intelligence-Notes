@@ -147,3 +147,27 @@ al enfriarse el sistema, el algoritmo se vuelve mas exigente y converge a un min
     El paso 1 \textbf{empeoró} ($h: 5 \to 6$) pero feu aceptado gracias a la temperatura alta. A partir del paso 5, la temperatura es tan baja que el algoritmo practicamente no 
     acepta empeoramientos: ya se comporta como hill-climbing
 \end{example}
+
+\subsection{Local Beam Search}
+
+\begin{definition}[Local Beam search]
+    Extensión de hill-climbing que mantiene \textbf{$k$ estados en paralelo} en lugar de uno solo. En cada iteracion se generan los sucesores de los $k$ estados
+    y se conservan los $k$ mejores de toda la lista combinada.
+    
+\end{definition}
+
+\begin{enumerate}
+    \item inicializar con $k$ estados aleatorios
+    \item generar todos los sucesores de los $k$ estados
+    \item si algún sucesor es meta: \textbf{terminar} (exito)
+    \item seleccionar los $k$ mejores sucesores (de la lista completa) y repetir desde 2
+\end{enumerate}
+
+La diferencia clave con Beam Search clásico: Beam Search es busqueda en arbol por niveles con poda (mantiene $k$ nodos por nivel); Local Beam Search es busqueda local con multiples estados en 
+paralelo \emph{sin} arbol explicito.
+
+\medskip
+Problema frecuente es los $k$ estados tienden a \emph{converger} al mismo maximo local porque comparten informacion. la variante \textbf{estocástica} selecciona los $k$ siguientes
+estados con probabilidad proporcional a su $f$, lo que manteine mayor diversidad.
+
+
