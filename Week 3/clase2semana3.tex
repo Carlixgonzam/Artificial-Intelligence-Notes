@@ -32,3 +32,15 @@ Agente toma decisiones segun el punto de desición, la utilidad es como la recom
 
 \subsection{Algoritmo MiniMax}
 Se aplica para juegos deterministicos y de cero suma. Hay un arbol de espacio de estados. Jugador alterna turnos. Computa el valor minimax de cada nodo (Mejor Utilidad alcanzable contra un jugador racional)
+
+Recompenssas $\neq$ Busqueda
+
+U = $f(n)$ $g=$ camino recorrido y $h=$ heuristica
+
+\subsubsection{Desiciones optimas en Juegos}
+
+Casos de cooperación implicita, donde hay multiples jugadores se toma en cuenta el costo por accion y considerar que hace al agente adversario
+
+\subsection{Limites de Recursos}
+Son juego srealisticos no puede buscar a hojas
+La solución es Depht-limiteed search, lo cual busca solucionar para un esapcio limitado, reemplazar las utilidades terminales con una funcion de evaluacion para posiciones no terminales
