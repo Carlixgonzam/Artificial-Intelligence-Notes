@@ -31,6 +31,62 @@ $x_1$, $x_2$ $\in$ [1..10] donde $x_1$ + $x_2$ > 10 y  $x_1$ - $x_2$ < 5.
 Nos interessa encontrar cualquier solución que satisfaga todas las restricciones - satisfactibilidad. Proceso de reolución my caro. Elevada explosión combinatoria de heuristicas.
 
 
+Los tipos de problemas de estados, se presentan mediante \textbf{estado inicial}, un conjunto de acciones o transiciones y un estado objetivo. Se clasifican principalmente en 4 tipos según el entorno, la información disponible
+y el numero de estados simultáneos que el agente maneja.
+\begin{enumerate}
+    \item \textbf{Problemas de un solo estado}: el agente asume que el entorno es totalmente observable y determinista. Conoce exactamente el estado actual y el resultado de cada acción.
+    \item \textbf{Problemas de estados multiples}: el entorno no es totalmente observable. El agente no sabe en qué estado se encuentra exactamente. Debe mantener un conjunto de \textit{estados posibles} y actualizarlo paso a paso hasta confirmar su posicion.
+    \item \textbf{Problemas de contingenica}: el entorno es dinámico, hostil o incluye a otros agentes. El plan inicial puede fallar porque ocurren eventos impredecibles. El agente debe calcular planes flexibles y modificarlos en tiempo real segun la info que percibe del entorno.
+    \item \textbf{Problemas de exploración}: el agente no tiene conocimiento previo de los estados ni de las reglas del entorno. debe interactuar directamente con el para descubrir los estados, acciones y los costos.
+\end{enumerate}
+
+Para \texttt{Problemas discretos}: Hill-climbing search, Simulated annealing, local beam search, algoritmos genéticos. \texttt{Problemas continuos}: Estrategias. \texttt{Problemas no deterministicos}: AND-OR Search trees, Try,Try again. 
+\texttt{Problemas no observables}: agentes en ambientes no observables, agenetes en ambientes parcialmente observables. Y por ultimo los ambientes desconocidos es busqueda online vvs offline.
+
+\subsubsection{Optimización de estrategias}
+Está la \textbf{maximización de beneficios} donde los modelos ayudan a los agentes de IA a identificar estrategias que maximicen sus beneficios en diversos escenarios, garantizando que tomen las decisiones mas ventajosas.
+Y el \textbf{equilibrio entre ventajas y desventajas} donde en situaciones que implican multiples objetivos, la teoria de jeugos ayuda a equilibrar las ventajas y desventajas para lograr el mejor resultado general.
+
+\section{Busqueda Adversaria}
+\subsection{Juegos de Cero Suma}
+La ganancia del jugador es la pérdida del otro.
+
+\subsection{Minimax en juegos de suma cero}
+Minimax es una regla de decision para minimizar la perdida posbile en el peor de los casos. En los juegos de suma cero, la ganancia de un jugador supone la pérdida de otro.
+Enfoque donde se empieza desde los sucesores y si se escoge el valro maximo se toma el mayor valor.
+
+\begin{lstlisting}
+    function minimax(position, depth, maximizingplayer):
+        if depth == 0 or game over in position
+            return static evaluation of position
+        if maximizingplayer:
+            maxeval = -infinity
+            for each child of position:
+                eval = minimax(child, depth - 1, false)
+                maxeval = max(maxeval, eval)
+            return maxeval
+        else:
+            mineval = -infinity
+            for each child of position:
+                eval = minimax(child, depth - 1, true)
+                mineval = min(mineval, eval)
+            return mineval
+\end{lstlisting}
+
+\subsection{Poda alfa-beta}
+Minimizar la carga computacional necesaria para explorar un arbol de juego, excluyendo las ramas que con certeza no serán optimas.
+
+$\alpha$ representa la puntuación maxima encontrada a lo largo del camino para el agente de IA.
+$\beta$ representa la puntuación minima para el oponente
+
+A medida que avanza la busqueda, cuando el algoritmo identifica un movimiento que conduce a una situacion peor que la conocida,
+elimina esa rama, ya que es irrelevante.
+
+
+
+
+
+
 Es una extensión y hay relajación de restricciones. 
 Juegos estocasticos
 Los juegos clásicos nosotros estamos viendo es si las maquinas peuden jugar? Puedan tomar mejores decisiones que nosotros?
@@ -46,9 +102,7 @@ Hay distintos tipos de ejes:
     \item uno, dos o mas jugadores
 \end{itemize}
 
-\subsubsection{Juegos de cero suma}
-Agentes tienen utilidades opuestas (valores en outcomes)
-Se puede pensar en un valoe unico que uno maximiza y el otro minimiza
+
 
 \begin{definition}
     Tenemos una utilidad que \textbf{U=A,B}, donde A maximiza y B minimiza
