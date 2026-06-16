@@ -341,3 +341,20 @@ En los algoritmos (BFS, DFS, A*) las acciones tienen un resultado \textbf{unico}
 
 
 
+\begin{example}[Mundo errático de la aspiradora]
+    \textbf{Función de resultados}:
+    $\mathrm{Resultados}(1, \text{Aspirar}) = \{5, 7\}$, es decir,
+    aspirar en el estado 1 puede dejar el mundo en el estado 5 o en el 7.
+   
+    \medskip
+    \textbf{Plan condicional resultante}:
+    \[
+      [\text{Aspirar},\; \textbf{if}\; \text{estado} = 5\;
+       \textbf{then}\; [\text{Derecha}, \text{Aspirar}]\;
+       \textbf{else}\; []]
+    \]
+    La solución ya no es una secuencia fija, sino un \emph{árbol de decisión}.
+  \end{example}
+
+\subsection{Arboles AND-OR}
+
