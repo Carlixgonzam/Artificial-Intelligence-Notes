@@ -82,6 +82,29 @@ $\beta$ representa la puntuación minima para el oponente
 A medida que avanza la busqueda, cuando el algoritmo identifica un movimiento que conduce a una situacion peor que la conocida,
 elimina esa rama, ya que es irrelevante.
 
+\begin{lstlisting}
+    function minimax(position, depth, alpha, beta, maximizingplayer):
+        if depth == 0 or game over in position
+            return static evaluation of position
+        if maximizingplayer:
+            maxeval = -infinity
+            for each child of position:
+                eval = minimax(child, depth - 1, alpha, beta, false)
+                maxeval = max(maxeval, eval)
+                if beta <= alpha   
+                    break
+            return maxeval
+        else:
+            mineval = -infinity
+            for each child of position:
+                eval = minimax(child, depth - 1, alpha, beta, true)
+                mineval = min(mineval, eval)
+                beta = min(beta,eval)
+                if beta <= alpha
+                    break
+            return mineval
+\end{lstlisting}
+
 
 
 
