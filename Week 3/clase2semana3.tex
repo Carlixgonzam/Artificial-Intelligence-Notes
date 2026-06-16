@@ -2,6 +2,35 @@
 
 \subsection{Adversaria y juegos}
 
+En cuanto a la agenda es:
+\begin{enumerate}
+    \item Teoría de juegos: como juegos de cero-suma
+    \item Decisiones optimas en juegos: algoritmo minimax, decisiones optimas en juegos multijugador, podada alfa-beta
+    \item Busqueda de arbol alpha-beta heuristico: funciones de eval, cortando la busqueda, podada forward
+\end{enumerate}
+
+Las \textbf{Relajación de restricciones} es una técnica utilizada para simplificar problemas complejos de busqueda y optimización. Consiste en \textit{eliminar o debilitar} algunas de las reglas de un problema para encontrar rapidamente una \textbf{solución aproximada}.
+Los pasos son los siguientes:
+\begin{itemize}
+    \item saber definir las variables y los dominios de valores
+    \item saber definir las restricciones entre variables
+    \item conocer la forma de resolución de este tipo de problemas y posibles heuristicas
+\end{itemize}
+
+Un ejemplo claro es el del sudoku, en este caso hay 8 reinas(8 variables) cada una tiene su posición $(x,y)$ cuyo diminio entero representa su posición en la fila/columna $1..8$
+Cada variable peude tener un \textbf{dominio distinto}
+Las \textbf{restricciones} las reinas no pueden compartir fila ni columna ni diagonal. En el sudoku los numeros no pueden repetirse en filas ni columnas ni en bloques de 3x3.
+Pueden involucrar a tantas variables como queramos (binarias, terniarias, etc)
+
+\subsection{Como aborda un CSP?}
+Generamos un espacio de busqueda, y analizamos cada variable/mejorar la complejidad:
+Hay un conjunto de \textbf{heuríasticas} con distintas aproximaciones $(tecnicas de inferencia)$ y durante la busqueda \textit{propagración y consistencia} y \textit{criterios de ordenacion y seleccion de variables y valores a instanciar}
+
+\textbf{Util} cuando tenemos un problema que se puede modelar como combinación de variables y restricciones.
+$x_1$, $x_2$ $\in$ [1..10] donde $x_1$ + $x_2$ > 10 y  $x_1$ - $x_2$ < 5.
+Nos interessa encontrar cualquier solución que satisfaga todas las restricciones - satisfactibilidad. Proceso de reolución my caro. Elevada explosión combinatoria de heuristicas.
+
+
 Es una extensión y hay relajación de restricciones. 
 Juegos estocasticos
 Los juegos clásicos nosotros estamos viendo es si las maquinas peuden jugar? Puedan tomar mejores decisiones que nosotros?
@@ -44,3 +73,4 @@ Casos de cooperación implicita, donde hay multiples jugadores se toma en cuenta
 \subsection{Limites de Recursos}
 Son juego srealisticos no puede buscar a hojas
 La solución es Depht-limiteed search, lo cual busca solucionar para un esapcio limitado, reemplazar las utilidades terminales con una funcion de evaluacion para posiciones no terminales
+Podada Forward, uso de estadisticas. Algoritmo de corte probabilistico y reduccion de movimientos tardios
