@@ -66,7 +66,7 @@ Enfoque donde se empieza desde los sucesores y si se escoge el valro maximo se t
                 maxeval = max(maxeval, eval)
             return maxeval
         else:
-            mineval = -infinity
+            mineval = +infinity
             for each child of position:
                 eval = minimax(child, depth - 1, true)
                 mineval = min(mineval, eval)
@@ -91,11 +91,12 @@ elimina esa rama, ya que es irrelevante.
             for each child of position:
                 eval = minimax(child, depth - 1, alpha, beta, false)
                 maxeval = max(maxeval, eval)
+                alpha = max(alpha, eval)
                 if beta <= alpha   
                     break
             return maxeval
         else:
-            mineval = -infinity
+            mineval = +infinity
             for each child of position:
                 eval = minimax(child, depth - 1, alpha, beta, true)
                 mineval = min(mineval, eval)
