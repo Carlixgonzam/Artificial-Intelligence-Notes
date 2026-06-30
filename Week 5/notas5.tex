@@ -1,0 +1,12 @@
+\section{Problemas de Satisfacción de restricciones}
+
+\subsection{Diagrama de Arbol}
+
+En la clase anterior se definió un CSP como una tripla \textit{(variables, dominios, restricciones)} y se vió la \textbf{busqueda backtracking}, que es como un DFS + ordenamiento de variables + falla inmediata ante violación;
+junto con dos mejoras clave:
+
+\begin{itemize}
+    \item \textbf{Filtrado} mediante $consistencia de arcos$; revisar si para cada valor de X, existe algún valor compatible en Y que detecta fallas inevitables antes que la simple revisión forward.
+    \item \textbf{Ordenamiento} MRV \textit{(Minimun Remaining Values)} para variables y LCV \textit{(Least constraining value)} para valores 
+\end{itemize}
+
