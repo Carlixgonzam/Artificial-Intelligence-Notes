@@ -10,3 +10,245 @@ junto con dos mejoras clave:
     \item \textbf{Ordenamiento} MRV \textit{(Minimun Remaining Values)} para variables y LCV \textit{(Least constraining value)} para valores 
 \end{itemize}
 
+
+\begin{example}
+    Con dominios iniciales {rojo,verde,azul} y restricciones de desigualdad entre regiones vecinas, al forzar consistencia de arcos
+    sobre el grafo WA NT SA Q NSW V se observa el efecto en cadena:
+    \begin{table}[h!]
+        \centering
+        \begin{tabular}{|c|c|}
+            \hline
+            Arco revisado & Resultado \\ \hline
+            V $\rightarrow$ NSW & Consistente \\ \hline
+            SA $\rightarrow$ NSW & Consistente \\ \hline
+            NSW $\rightarrow$ SA & Inconsistente, se elimina azul del dominio de NSW \\ \hline
+            V $\rightarrow$ NSW & Como NSW cambi+o, se vuelve a ervisar se elimina rojo de V \\ \hline
+        \end{tabular}
+        \caption{Efecto en cadena al forzar consistencia de arcos.}
+        \label{tab:consistencia_arcos}
+    \end{table}
+    Si el dominio de X pierde un valor, todos los vecinos de X se deben volver a revisar, porque una restriccion que antes era
+    satisfacible puede dejar de serlo
+\end{example}
+
+Forzar consistencia de arcos sobre todo el CSP \textbf{no garantiza} encontrar la solución. al terminar el proceso puede que a quede exactamente una solución,
+b queden multiples soluciones sin decidir entre ellas o c el problema no tenga soluci´n y el algoritmo no lo sepa. Por eso la consistencia se arcos se corre dentro de una
+busqueda backtracking no en lugar de ella.
+
+\subsection{k-consistencia}
+La consistencia de arcos es apenas un caso particular de na idea más general, ir aumentando el grado de consistencia que se exige, de nodos a arcos, de arcos a trios de variables y así sucesivamente.
+
+\begin{definition}
+    Un CSP es k-consistente si, para cualquier conjunto de k-1 variables y cualquier asignación consistente a esas k-1 variables, siempre existe un valor consistente para extender la asignación a una k-esima variable cualquiera.
+\end{definition}
+
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{|p{4.2cm}|p{8.5cm}|}
+        \hline
+        Nivel & Que garantiza \\ \hline
+        1-consistencia (consistencia de nodos) & Cada dominio ya respeta las restricciones unarias del nodo \\ \hline
+        2-consistencia (consistencia de arcos) & Toda asignación consistente a un nodo se extiende al otro \\ \hline
+        3-consistencia (consistencia de caminos) & Todo par de nodos consistentes se pued extender a un tercero \\ \hline
+        k-consistencia & Se cumple simulataneamente para 1,2,...,k \\ \hline
+    \end{tabular}
+\end{table}
+
+A mayor k, el filtrado poda mas el arbol de bsuqeuda, pero tambien es \textbf{mas caro de computar}. No hay almuerzo gratis,
+es un tradeoff entre tiempo invertido en propagación de restricciones y tiempo inertido en backtracking.
+
+\subsection{Forward Checking}
+
+Es una alternativa más barata que forzar consistencia de arcos completa. Cada vez que se asigna un valor a $X_i$, se recorren
+las variables \textbf{vecinas no asignadas} de $X_i$ y se elimina de sus dominios cualquier valor inconsistente con la asignación
+recién hecha.
+
+\begin{definition}[Forward Checking]
+    Al asignar $X_i \leftarrow v$, para cada variable $X_j$ vecina de $X_i$ y aún sin asignar, eliminar de $D_j$ todo valor
+    que no sea consistente con $X_i = v$. Si algún $D_j$ queda vacío, se detecta el fallo inmediatamente sin necesidad de
+    llegar a esa variable.
+\end{definition}
+
+La diferencia con la consistencia de arcos (AC-3) es que forward checking \textbf{solo revisa los arcos que salen de la
+variable recién asignada}, una sola vez. No propaga el efecto en cadena hacia el resto del grafo como sí lo hace AC-3
+(que vuelve a revisar los vecinos de un vecino cuando su dominio cambia). Por eso forward checking es más barato pero
+detecta menos inconsistencias por adelantado; es un punto intermedio entre backtracking simple ($0$ chequeo hacia
+adelante) y AC-3 completo (propagación total).
+
+\subsection{Estructura del grafo de restricciones}
+
+Cuando el grafo de restricciones de un CSP es un \textbf{árbol} (sin ciclos), el problema se puede resolver en tiempo
+$\bigO{nd^2}$, sin ningún backtracking.
+
+\begin{definition}[CSP con estructura de árbol]
+    \begin{enumerate}
+        \item Elegir una variable como raíz y ordenar el resto en un orden topológico $X_1, \ldots, X_n$ tal que cada
+        variable aparezca después de su padre en el árbol.
+        \item Recorrer las variables \textbf{de atrás hacia adelante} ($j$ de $n$ a $2$) y forzar consistencia de arco
+        entre $X_j$ y su padre $\text{Padre}(X_j)$, eliminando del dominio del padre los valores que ya no tengan soporte.
+        \item Recorrer las variables \textbf{de adelante hacia atrás} ($j$ de $1$ a $n$) asignando a cada $X_j$ cualquier
+        valor de su dominio consistente con el valor ya asignado a $\text{Padre}(X_j)$.
+    \end{enumerate}
+    Como el grafo quedó dirigido y arco-consistente antes de asignar, el segundo recorrido nunca falla: nunca hay que
+    retroceder.
+\end{definition}
+
+La mayoría de los CSP reales no son árboles, pero se pueden \textbf{acercar} a esa estructura:
+
+\begin{itemize}
+    \item \textbf{Cutset conditioning}: encontrar un conjunto pequeño de variables (\emph{cutset}) tal que, al eliminarlas
+    del grafo, lo que queda es un árbol. Se prueban todas las asignaciones consistentes posibles para el cutset y, para
+    cada una, se resuelve el árbol restante en $\bigO{nd^2}$. Si el cutset tiene tamaño $c$, el costo total es
+    $\bigO{d^c \cdot (n-c)d^2}$: exponencial en $c$, pero manejable si $c$ es pequeño respecto a $n$.
+    \item \textbf{Tree decomposition}: agrupar variables en subproblemas conectados en forma de árbol (cada subproblema
+    se resuelve por separado) para luego combinar soluciones consistentes entre subproblemas vecinos.
+\end{itemize}
+
+\subsection{Búsqueda local para CSP: Min-conflicts}
+
+A diferencia de backtracking (que construye la asignación variable por variable), min-conflicts parte de una
+\textbf{asignación completa} (posiblemente inconsistente) y la va reparando.
+
+\begin{definition}[Min-conflicts]
+    \begin{enumerate}
+        \item Generar una asignación inicial completa, asignando a cada variable un valor cualquiera de su dominio
+        (puede violar restricciones).
+        \item Repetir hasta encontrar una solución o alcanzar un número máximo de pasos:
+        \begin{enumerate}
+            \item Elegir al azar una variable $X_i$ que esté en conflicto (viola alguna restricción).
+            \item Reasignarle el valor de su dominio que \textbf{minimice el número de conflictos} con las demás
+            variables (rompiendo empates al azar).
+        \end{enumerate}
+    \end{enumerate}
+\end{definition}
+
+\begin{example}[Min-conflicts en n-reinas]
+    Con las 8 reinas ya puestas una por columna (asignación inicial con conflictos), en cada paso se elige una reina que
+    ataque a otra y se mueve dentro de su columna a la fila con menos reinas atacándola. En la práctica, resuelve
+    instancias de miles de reinas en muy pocos pasos.
+\end{example}
+
+Es muy eficiente en la práctica incluso para CSPs grandes, pero \textbf{no garantiza completitud}: puede quedar
+atascado y nunca encontrar una solución aunque exista (no hay noción de retroceso ni de dominios que se agotan).
+
+\section{Ejercicio: Coloreado del mapa de Australia}
+
+\begin{exercise}
+    Aplicar backtracking con MRV (y desempate por grado) y propagación tipo forward checking al problema de colorear el
+    mapa de Australia con 3 colores $\{$rojo, verde, azul$\}$, exigiendo que regiones vecinas tengan colores distintos.
+    Regiones: WA, NT, SA, Q, NSW, V, T (Tasmania es una isla, no tiene vecinos). Adyacencias: WA-NT, WA-SA, NT-SA, NT-Q,
+    SA-Q, SA-NSW, SA-V, Q-NSW, NSW-V.
+
+    \textbf{Solución:}
+
+    Todas las variables (salvo T) parten con $|D|=3$: hay empate en MRV, así que se desempata con la \textbf{heurística
+    de grado} (más restricciones sobre variables sin asignar todavía). SA tiene grado 5, el más alto de todo el grafo,
+    así que se asigna primero.
+
+    \begin{table}[h!]
+        \centering
+        \begin{tabular}{|c|c|c|}
+            \hline
+            Paso & Asignación & Efecto de la propagación \\ \hline
+            1 & SA = rojo & Se elimina rojo de WA, NT, Q, NSW, V \\ \hline
+            2 & Q = verde & Se elimina verde de NT y de NSW \\ \hline
+            3 & NT = azul & Se elimina azul de WA \\ \hline
+            4 & WA = verde & Sin vecinos nuevos por revisar \\ \hline
+            5 & NSW = azul & Se elimina azul de V \\ \hline
+            6 & V = verde & Sin vecinos nuevos por revisar \\ \hline
+            7 & T = rojo & T no tiene restricciones, cualquier color sirve \\ \hline
+        \end{tabular}
+        \caption{Traza de backtracking + MRV + forward checking sobre el mapa de Australia.}
+        \label{tab:australia_solucion}
+    \end{table}
+
+    En cada paso, después de asignar, la variable que queda con el dominio más pequeño (a veces de tamaño 1) es la
+    siguiente elegida por MRV, así que no hace falta romper más empates. La propagación evita que en este caso se
+    necesite retroceder: ningún dominio queda vacío en el camino.
+
+    \textbf{Solución final:} SA = rojo, Q = verde, NT = azul, WA = verde, NSW = azul, V = verde, T = rojo (o cualquier
+    color, T no tiene vecinos).
+\end{exercise}
+
+\section{Agentes Lógicos: Introducción}
+
+\subsection{Agentes basados en conocimiento}
+
+Un agente basado en conocimiento mantiene una \textbf{base de conocimiento} (KB): un conjunto de oraciones en algún
+lenguaje de representación que expresan hechos sobre el mundo. El agente decide qué acción tomar consultando (ASK) e
+incorporando percepciones nuevas (TELL) a la KB, usando un \textbf{motor de inferencia}.
+
+\begin{definition}[Agente basado en conocimiento]
+    En cada ciclo el agente: (1) le dice (TELL) a la KB lo que percibió, (2) le pregunta (ASK) cuál es la mejor acción
+    dado lo que sabe, y (3) le dice a la KB qué acción ejecutó. Todo el conocimiento sobre el dominio vive en la KB,
+    no en el código del agente, así que se puede razonar y no solo reaccionar.
+\end{definition}
+
+$$\text{KB} \vdash \alpha \quad \text{(la KB \textbf{deriva} } \alpha \text{ sintácticamente, con un procedimiento de inferencia)}$$
+
+Un procedimiento de inferencia es \textbf{sólido} (\emph{sound}) si solo deriva oraciones que realmente son
+consecuencia lógica de la KB, y es \textbf{completo} si es capaz de derivar toda oración que sea consecuencia lógica.
+
+\subsection{Lógica proposicional}
+
+\textbf{Sintaxis:} oraciones atómicas (símbolos proposicionales, cada uno verdadero o falso) combinadas con conectivos
+lógicos $\neg$ (negación), $\land$ (conjunción), $\lor$ (disyunción), $\Rightarrow$ (implicación), $\Leftrightarrow$
+(bicondicional), para formar oraciones complejas.
+
+\textbf{Semántica:} un \textbf{modelo} es una asignación de verdadero/falso a cada símbolo proposicional. Dado un
+modelo, el valor de verdad de cualquier oración se calcula recursivamente con las tablas de verdad de los conectivos.
+
+\begin{itemize}
+    \item Una oración es \textbf{válida} (tautología) si es verdadera en \textbf{todos} los modelos (ej. $P \lor \neg P$).
+    \item Una oración es \textbf{satisfacible} si es verdadera en \textbf{al menos un} modelo.
+    \item Una oración es \textbf{insatisfacible} si no es verdadera en ningún modelo (ej. $P \land \neg P$).
+    \item \textbf{Consecuencia lógica (entailment)}: $KB \models \alpha$ si en todo modelo donde KB es verdadera,
+    $\alpha$ también lo es. Equivalentemente, $KB \models \alpha$ si y solo si $KB \land \neg\alpha$ es insatisfacible.
+\end{itemize}
+
+\begin{example}[Model checking]
+    Para decidir si $KB \models \alpha$ por enumeración de modelos: se listan todas las combinaciones de verdad de los
+    símbolos que aparecen en KB y en $\alpha$ (tabla de verdad completa), y se revisa que en toda fila donde KB sea
+    verdadera, $\alpha$ también lo sea. Es correcto pero exponencial en el número de símbolos.
+\end{example}
+
+\subsection{Formas normales: CNF y DNF}
+
+\begin{itemize}
+    \item \textbf{CNF} (Forma Normal Conjuntiva): conjunción de cláusulas, donde cada cláusula es una disyunción de
+    literales. Es la forma que usan la mayoría de los algoritmos de inferencia (resolución, DPLL, etc.).
+    \item \textbf{DNF} (Forma Normal Disyuntiva): disyunción de términos, donde cada término es una conjunción de
+    literales.
+\end{itemize}
+
+\textbf{Pasos para convertir cualquier oración a CNF:}
+\begin{enumerate}
+    \item Eliminar $\Leftrightarrow$: reemplazar $\alpha \Leftrightarrow \beta$ por $(\alpha \Rightarrow \beta) \land (\beta \Rightarrow \alpha)$.
+    \item Eliminar $\Rightarrow$: reemplazar $\alpha \Rightarrow \beta$ por $\neg\alpha \lor \beta$.
+    \item Meter las negaciones hacia adentro usando De Morgan ($\neg(\alpha \land \beta) \equiv \neg\alpha \lor \neg\beta$,
+    $\neg(\alpha \lor \beta) \equiv \neg\alpha \land \neg\beta$) y eliminar dobles negaciones.
+    \item Distribuir $\lor$ sobre $\land$ hasta que quede una conjunción de disyunciones de literales.
+\end{enumerate}
+
+\subsection{El mundo del Wumpus}
+
+Ambiente clásico para introducir agentes lógicos: una cueva en cuadrícula (típicamente $4\times4$), con un Wumpus que
+mata al agente si entra en su casilla, pozos que lo hacen caer, y oro que debe recoger y sacar. El agente empieza en
+$(1,1)$ y solo percibe su casilla actual.
+
+\begin{itemize}
+    \item \textbf{Percepciones}: \emph{stench} (hedor, si el Wumpus está en una casilla adyacente), \emph{breeze}
+    (brisa, si hay un pozo adyacente), \emph{glitter} (brillo, si hay oro en la casilla), \emph{bump} (chocó con
+    pared), \emph{scream} (grito, al matar al Wumpus con una flecha).
+    \item \textbf{Acciones}: avanzar, girar izquierda/derecha, agarrar, disparar, subir (para salir de la cueva).
+\end{itemize}
+
+\begin{example}[Inferencia en el mundo del Wumpus]
+    Si en $(1,1)$ el agente no percibe ni hedor ni brisa, la regla $Breeze_{(x,y)} \Leftrightarrow \bigvee \text{Pit}_{\text{vecino}}$
+    (y la equivalente para $Stench$ y el Wumpus) permite concluir que \textbf{ninguna} casilla vecina, $(1,2)$ y
+    $(2,1)$, tiene pozo ni Wumpus: son seguras para avanzar. Si luego en $(2,1)$ el agente sí percibe brisa (pero no
+    hedor), infiere que hay un pozo en $(3,1)$ o en $(2,2)$, pero \textbf{no sabe en cuál} de los dos sin más
+    información; ese es justamente el tipo de razonamiento bajo información parcial que la KB tiene que resolver
+    combinando todas las percepciones acumuladas, no solo la última.
+\end{example}
+
