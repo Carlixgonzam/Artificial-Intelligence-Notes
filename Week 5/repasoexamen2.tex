@@ -1,2 +1,115 @@
 \section{Repaso General Examen 2 Inteligencia Artificial}
 
+Las decisiones optimas en juegos se componen de:
+\begin{enumerate}
+    \item Busqueda Minimax: arbol de esapcio de estados, Jugador alterna turnos y tiene mejor utilidad alcanzable contra un jugador racional (óptimo)
+\end{enumerate}
+
+\begin{lstlisting}[language=Python]
+def max-value(estado):
+    inicializar = -infinito
+    para cada sucesor del estado:
+        v = max(v, min-value(sucesor))
+    return v
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+    def min-value(estado):
+        inicializar = +infinito
+        para cada sucesor del estado:
+            v = min(v, max-value(sucesor))
+        return v
+    \end{lstlisting}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  level distance=16mm,
+  level 1/.style={sibling distance=42mm},
+  level 2/.style={sibling distance=14mm},
+  maxnode/.style={
+    regular polygon, regular polygon sides=3,
+    draw=pink!70!black, fill=pink!25, thick,
+    minimum size=8mm, inner sep=0pt, font=\small\bfseries
+  },
+  minnode/.style={
+    regular polygon, regular polygon sides=3, shape border rotate=180,
+    draw=magenta!60!black, fill=pink!45, thick,
+    minimum size=8mm, inner sep=0pt, font=\small\bfseries
+  },
+  leaf/.style={
+    rectangle, rounded corners=1pt,
+    draw=pink!80!black, fill=pink!10, thick,
+    minimum size=7mm, font=\small
+  },
+  edge from parent/.style={draw=magenta!50!black, thick, -{Latex[length=2mm]}}
+]
+
+\node[maxnode] (root) {3}
+  child { node[minnode] (A) {3}
+    child { node[leaf] {3} }
+    child { node[leaf] {12} }
+    child { node[leaf] {8} }
+  }
+  child { node[minnode] (B) {2}
+    child { node[leaf] {2} }
+    child { node[leaf] {4} }
+    child { node[leaf] {6} }
+  }
+  child { node[minnode] (C) {2}
+    child { node[leaf] {14} }
+    child { node[leaf] {5} }
+    child { node[leaf] {2} }
+  };
+
+\node[left=6mm of root, font=\small\bfseries\itshape, text=magenta!70!black] {MAX};
+\node[left=6mm of A, font=\small\bfseries\itshape, text=magenta!70!black] {MIN};
+
+\end{tikzpicture}
+\caption{Árbol de búsqueda Minimax: el nodo MAX (raíz) elige el sucesor con mayor valor entre los mínimos que garantizan los nodos MIN; los valores se propagan de las hojas hacia arriba.}
+\end{figure}
+
+
+\subsection{Probabilidad marginal, conjunta y condicional}
+
+\begin{definition}
+    \textbf{Probabilidad conjunta}: P(A,B) es la probabilidad de que ocurran simultaneamente los eventos A y B. Se representa como una tabla 
+    donde cada celda es $P=(A=a,B=b)$ y la suma de todas las celdas es 1.
+\end{definition}
+
+\begin{definition}
+    \textbf{Probabilidad marginal}: Se obtiene sumando sobre la variable que se quiere eliminar:
+    \[
+        P(A=a) = \sum_{b} P(A=a, B=b)
+    \]
+\end{definition}
+
+En una tabla, corresponde a sumar la fila o columna correspondiente.
+
+\begin{definition}
+    \textbf{Probabilidad condicional}: La fracción de los casos donde ocurre B es los que tambien ocurre A.
+    \[
+        P(A|B) = \frac{P(A,B)}{P(B)}, P(B)>0
+    \]
+\end{definition}
+
+Se presente una asimetría importante donde $P(A|B) \neq P(B|A)$ en general. 
+
+\subsection{Regla del producto y regla de la cadena}
+
+\begin{theorem}
+    \textbf{Regla del producto}: 
+    \[
+        P(A,B) = P(A|B)P(B) = P(B|A)P(A)
+    \]
+\end{theorem}
+
+\begin{theorem}
+    \textbf{Regla de la cadena}: 
+    \[
+        P(x_1, ..., x_n) = P(x_1)P(x_2|x_1)P(x_3|x_1,x_2) ... P(x_n|x_1,...,x_n-1)
+    \]
+    Sin ningun supuesto de independencia, el numero de parametros libres crece exponencialmente con $n$. Cada supuesto
+    de independencia condicional que se agrega elimina variables de la lista de condicionales y reduce ese numero.
+\end{theorem}
+
