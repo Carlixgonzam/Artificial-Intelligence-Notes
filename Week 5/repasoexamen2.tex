@@ -113,3 +113,156 @@ Se presente una asimetría importante donde $P(A|B) \neq P(B|A)$ en general.
     de independencia condicional que se agrega elimina variables de la lista de condicionales y reduce ese numero.
 \end{theorem}
 
+\subsection{Ejercicio ScoreTrack}
+
+ScoreTrack es una plataforma de analisis de rendimiento deportivo. Registra si un partido terminó en victoria (R=victoria)
+o derrota (R=derrota) segun si el equipo jugó de local (C=local) o visitante(C=visitante). La tabla conjunta P(R,C) reune datos de 200 partidos de la ultima temporada.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{lccc}
+        \toprule
+        $P(R,C)$ & $C=\text{local}$ & $C=\text{visitante}$ & $P(R)$ \\
+        \midrule
+        $R=\text{victoria}$ & 0.42 & 0.18 & ? \\
+        $R=\text{derrota}$  & 0.28 & 0.12 & ? \\
+        \midrule
+        $P(C)$ & ? & ? & 1.00 \\
+        \bottomrule
+    \end{tabular}
+    \caption{Distribución conjunta $P(R,C)$ con marginales}
+\end{table}
+
+
+\begin{enumerate}
+    \item Complete las marginales P(R) y P(C) de la tabla.
+    \item Calcule P(C = local | R = victoria) usando la definición de probabilidad condicional. Muestre numerador y denominador.
+    \item Calcule P(R = victoria | C = local). Compare este resultado con el del punto 2. ¿Son iguales? ¿Por qué no?
+    \item Verifique su respuesta del punto 2 usando la Regla de Bayes: P(C=local|R=victoria) = P(R=victoria|C=local)·P(C=local) / P(R=victoria).
+    \item Calcule P(R = derrota | C = visitante).
+\end{enumerate}
+
+\section{Procesos de Decisión de Markov (MDPs)}
+
+\subsection{Definición y propiedad de Markov}
+
+\begin{definition}[MDP]
+    Un MDP se define como la tupla $(S, A, P, R, \gamma)$:
+    \begin{itemize}
+        \item $S$: conjunto de estados.
+        \item $A$: conjunto de acciones disponibles.
+        \item $P(s'|s,a)$: modelo de transición, probabilidad de llegar a $s'$ al ejecutar $a$ en $s$.
+        \item $R(s,a,s')$: función de recompensa asociada a esa transición.
+        \item $\gamma \in [0,1]$: factor de descuento, penaliza recompensas lejanas en el tiempo.
+    \end{itemize}
+\end{definition}
+
+\begin{definition}[Propiedad de Markov]
+    \[
+        P(s_{t+1} \mid s_t, a_t) = P(s_{t+1} \mid s_0, a_0, \ldots, s_t, a_t)
+    \]
+    El estado siguiente depende únicamente del estado y la acción actuales, no de todo el historial que llevó hasta ahí.
+\end{definition}
+
+\subsection{Política, utilidad y ecuación de Bellman}
+
+\begin{definition}[Política y utilidad]
+    Una \textbf{política} $\pi(s)$ asigna una acción a cada estado. La \textbf{utilidad} de una secuencia de estados es el
+    retorno descontado $U = \sum_{t=0}^{\infty} \gamma^t R_t$. La \textbf{política óptima} $\pi^*$ es la que maximiza la
+    utilidad esperada desde cualquier estado inicial.
+\end{definition}
+
+\begin{theorem}[Ecuación de Bellman]
+    \[
+        U^*(s) = \max_{a} \sum_{s'} P(s'\mid s,a)\left[R(s,a,s') + \gamma U^*(s')\right]
+    \]
+    La utilidad óptima de un estado es la mejor acción disponible, promediada sobre los posibles estados siguientes
+    ponderados por su probabilidad, sumando la recompensa inmediata más el valor descontado de continuar óptimamente.
+\end{theorem}
+
+
+\subsection{Algoritmos de solución}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{lp{9cm}}
+        \toprule
+        Algoritmo & Idea \\
+        \midrule
+        Value Iteration & Aplica la ecuación de Bellman como regla de actualización repetidamente sobre $U(s)$ para todo
+        $s$, hasta que los valores cambien menos que un umbral $\epsilon$. Al converger, $\pi^*(s) = \arg\max_a
+        \sum_{s'} P(s'\mid s,a)[R(s,a,s') + \gamma U(s')]$. \\
+        Policy Iteration & Alterna entre (1) \textbf{evaluación de política}: resolver el sistema lineal de $U^\pi(s)$
+        para la política fija $\pi$, y (2) \textbf{mejora de política}: actualizar $\pi(s)$ eligiendo la acción que
+        maximiza la utilidad usando la $U^\pi$ recién calculada. Converge cuando la política deja de cambiar. \\
+        \bottomrule
+    \end{tabular}
+    \caption{Comparación de los dos algoritmos clásicos para resolver un MDP.}
+\end{table}
+
+\begin{remark}
+    Ambos algoritmos convergen a la misma política óptima $\pi^*$. Value iteration hace actualizaciones más baratas
+    pero puede necesitar muchas iteraciones; policy iteration hace iteraciones más caras (resolver un sistema lineal)
+    pero típicamente converge en menos pasos.
+\end{remark}
+
+\subsection{Ejercicio: RobotExplorador}
+
+Un robot aspiradora se mueve en un pasillo de tres estados $s_1 \to s_2 \to s_3$, donde $s_3$ es la estación de carga
+(estado \textbf{terminal}, recompensa $+10$). Desde $s_1$ o $s_2$ el robot ejecuta la acción \textit{avanzar}: con
+probabilidad $0.8$ se mueve al siguiente estado del pasillo, y con probabilidad $0.2$ una rueda patina y se queda en el
+mismo estado. Cada transición no terminal cuesta $R = -1$ (consumo de batería). Use $\gamma = 0.9$.
+
+Después de una iteración de value iteration se tienen las estimaciones $U(s_1) = 0$, $U(s_2) = 5$, $U(s_3) = 10$ (fijo,
+por ser terminal).
+
+\begin{enumerate}
+    \item Escriba la ecuación de Bellman para $U(s_2)$ considerando la acción \textit{avanzar}.
+    \item Calcule el nuevo valor de $U(s_2)$ usando las estimaciones de la iteración anterior.
+    \item Calcule el nuevo valor de $U(s_1)$ de la misma forma.
+    \item Sin volver a iterar, ¿por qué $U(s_1)$ tarda más iteraciones en reflejar la recompensa de $s_3$ que $U(s_2)$?
+\end{enumerate}
+
+\section{CSP: Repaso rápido}
+
+\begin{notebox}
+    El detalle completo de estas técnicas (con ejemplos y el ejercicio del mapa de Australia) está en las notas de la
+    Semana 5. Esta es solo una tabla de repaso rápido para el examen.
+\end{notebox}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{lp{9cm}}
+        \toprule
+        Técnica & Idea clave \\
+        \midrule
+        AC-3 (consistencia de arcos) & Elimina de cada dominio los valores sin soporte en el vecino; si el dominio de
+        una variable cambia, se \textbf{vuelven a revisar sus vecinos} (propagación en cadena). Se corre dentro de
+        backtracking, no lo reemplaza: no garantiza encontrar la solución por sí sola. \\
+        Forward Checking & Al asignar $X_i \leftarrow v$, poda solo los dominios de los vecinos \textbf{directos} de
+        $X_i$, una única vez. Más barato que AC-3 pero detecta menos inconsistencias por adelantado. \\
+        MRV + heurística de grado & Orden de \textbf{variables}: elegir la de dominio más pequeño (Minimum Remaining
+        Values); en empate, la que más restricciones tiene sobre variables aún sin asignar (grado). \\
+        LCV & Orden de \textbf{valores}: elegir el valor que menos elimine opciones de los vecinos sin asignar. \\
+        Estructura de árbol & Si el grafo de restricciones no tiene ciclos, se resuelve en $\bigO{nd^2}$ sin
+        backtracking (arco-consistencia hacia la raíz, luego asignación hacia las hojas). \\
+        Cutset conditioning & Para grafos con ciclos: fijar un conjunto pequeño de variables (cutset) para que el
+        resto quede en forma de árbol; costo $\bigO{d^c\cdot(n-c)d^2}$, exponencial en el tamaño $c$ del cutset. \\
+        Min-conflicts & Búsqueda local: parte de una asignación completa (con conflictos) y reasigna variables en
+        conflicto al valor que menos conflictos genere. Rápido en la práctica, pero \textbf{incompleto} (puede
+        atascarse). \\
+        \bottomrule
+    \end{tabular}
+    \caption{Repaso rápido de técnicas de propagación y búsqueda para CSP.}
+\end{table}
+
+\begin{exercise}
+    Para cada escenario, indique qué técnica de la tabla anterior es más adecuada y por qué:
+    \begin{enumerate}
+        \item Un CSP grande donde ya se sabe que el grafo de restricciones no tiene ciclos.
+        \item Un CSP con miles de variables (como n-reinas a gran escala) donde no importa perder completitud a cambio
+        de velocidad.
+        \item Un paso de backtracking donde se quiere podar dominios de forma barata sin propagar en cadena.
+    \end{enumerate}
+\end{exercise}
+
