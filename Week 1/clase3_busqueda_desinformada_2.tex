@@ -20,6 +20,51 @@
     \item Tiempo: $\bigO{b^m}$ \quad Espacio: $\bigO{bm}$
 \end{itemize}
 
+\begin{figure}[H]
+\centering
+\begin{minipage}{0.48\textwidth}
+\centering
+\begin{tikzpicture}[
+  nodo/.style={draw=black, thick, circle, minimum size=7mm, font=\scriptsize},
+  level distance=11mm, sibling distance=15mm
+]
+\node[nodo] {1}
+  child { node[nodo] {2}
+    child { node[nodo] {4} }
+    child { node[nodo] {5} }
+  }
+  child { node[nodo] {3}
+    child { node[nodo] {6} }
+    child { node[nodo] {7} }
+  };
+\end{tikzpicture}
+
+\small\textit{BFS: orden de expansión 1,2,3,4,5,6,7 (nivel por nivel).}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\textwidth}
+\centering
+\begin{tikzpicture}[
+  nodo/.style={draw=black, thick, circle, minimum size=7mm, font=\scriptsize},
+  level distance=11mm, sibling distance=15mm
+]
+\node[nodo] {1}
+  child { node[nodo] {2}
+    child { node[nodo] {3} }
+    child { node[nodo] {4} }
+  }
+  child { node[nodo] {5}
+    child { node[nodo] {6} }
+    child { node[nodo] {7} }
+  };
+\end{tikzpicture}
+
+\small\textit{DFS: orden de expansión 1,2,3,4,5,6,7 (baja hasta el fondo antes de retroceder).}
+\end{minipage}
+\caption{Mismo árbol de búsqueda, dos órdenes de expansión distintos según la estructura de datos de la frontera
+(cola FIFO en BFS, pila LIFO en DFS).}
+\end{figure}
+
 \subsection{Depth-Limited Search y Iterative Deepening (IDDFS)}
 
 IDDFS ejecuta DFS con límite de profundidad creciente $l = 0, 1, 2, \ldots$
@@ -38,6 +83,13 @@ IDDFS ejecuta DFS con límite de profundidad creciente $l = 0, 1, 2, \ldots$
     \item \textbf{Óptimo}: sí.
     \item Tiempo y espacio: $\bigO{b^{1+\lfloor C^*/\epsilon \rfloor}}$, donde $C^*$ es el costo óptimo.
 \end{itemize}
+
+\begin{example}[UCS sobre un grafo con costos]
+    Usando el grafo de Rumania de la clase anterior, para ir de $Arad$ a $Bucarest$, UCS explora en este orden (por
+    costo acumulado $g(n)$ creciente): $Arad(0)$, $Zerind(75)$, $Sibiu(140)$, $Oradea(146)$, $Rimnicu(220)$,
+    $Fagaras(239)$, $Bucarest$ vía $Rimnicu \to Pitesti \to Bucarest$ con costo $418$, que resulta más barato que ir
+    vía $Fagaras$ (costo $450$), aunque $Fagaras$ se alcance primero.
+\end{example}
 
 \subsection{Comparativa Búsqueda Desinformada}
 

@@ -28,3 +28,35 @@ $$\text{MINIMAX}(s) = \begin{cases}
     \item Completo (en árbol finito) y óptimo contra un oponente óptimo.
     \item Tiempo: $\bigO{b^m}$ \quad Espacio: $\bigO{bm}$
 \end{itemize}
+
+\begin{example}[Minimax sobre un árbol de profundidad 2]
+    En el árbol de la Figura siguiente, cada hoja es un estado terminal con su utilidad para MAX. Los valores se
+    calculan de abajo hacia arriba: cada nodo MIN toma el mínimo de sus hijos, y la raíz (MAX) toma el máximo de los
+    valores que le devuelven los nodos MIN.
+\end{example}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  level distance=15mm,
+  level 1/.style={sibling distance=32mm},
+  level 2/.style={sibling distance=13mm},
+  maxnode/.style={draw=black, thick, regular polygon, regular polygon sides=3, minimum size=8mm, inner sep=0pt, font=\small},
+  minnode/.style={draw=black, thick, regular polygon, regular polygon sides=3, shape border rotate=180, minimum size=8mm, inner sep=0pt, font=\small},
+  leaf/.style={draw=black, thick, rectangle, minimum size=7mm, font=\small}
+]
+\node[maxnode] (root) {3}
+  child { node[minnode] (A) {3}
+    child { node[leaf] {3} }
+    child { node[leaf] {5} }
+  }
+  child { node[minnode] (B) {2}
+    child { node[leaf] {2} }
+    child { node[leaf] {9} }
+  };
+\node[left=6mm of root, font=\scriptsize\itshape] {MAX};
+\node[left=6mm of A, font=\scriptsize\itshape] {MIN};
+\end{tikzpicture}
+\caption{Árbol minimax: los nodos MIN eligen el menor de sus hijos ($\min(3,5)=3$ y $\min(2,9)=2$); la raíz MAX elige
+el mayor de esos valores ($\max(3,2)=3$), así que la rama izquierda es la jugada óptima para MAX.}
+\end{figure}

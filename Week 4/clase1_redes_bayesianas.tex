@@ -32,4 +32,70 @@ $$P(X_1, \ldots, X_n) = \prod_{i=1}^{n} P(X_i \mid \text{Parents}(X_i))$$
     \item \textbf{MCMC / Gibbs Sampling}: muestrea cada variable condicionada al resto.
 \end{itemize}
 
-% Agrega aquí ejemplo: red de alarma (Burglar-Earthquake-Alarm-JohnCalls-MaryCalls)
+\begin{example}[Red de alarma]
+    Un sistema de alarma antirrobo se activa por un robo o (raramente) por un temblor. Dos vecinos, John y Mary,
+    llaman si oyen la alarma, pero a veces confunden el teléfono con la alarma o no la oyen.
+\end{example}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  var/.style={draw=black, thick, circle, minimum size=13mm, font=\small}
+]
+\node[var] (B) at (0,3)    {Robo};
+\node[var] (E) at (4,3)    {Temblor};
+\node[var] (A) at (2,1.2)  {Alarma};
+\node[var] (J) at (0,-0.8) {John};
+\node[var] (M) at (4,-0.8) {Mary};
+
+\draw[-{Latex},thick] (B) -- (A);
+\draw[-{Latex},thick] (E) -- (A);
+\draw[-{Latex},thick] (A) -- (J);
+\draw[-{Latex},thick] (A) -- (M);
+\end{tikzpicture}
+\caption{Red bayesiana Robo-Temblor-Alarma-John-Mary. Robo y Temblor son independientes a priori, pero se vuelven
+\textbf{dependientes} al condicionar sobre Alarma (\textit{explaining away}); John y Mary son condicionalmente
+independientes dado Alarma.}
+\end{figure}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{cc}
+        \toprule
+        $P(\text{Robo})$ & $P(\text{Temblor})$ \\
+        \midrule
+        0.001 & 0.002 \\
+        \bottomrule
+    \end{tabular}
+    \qquad
+    \begin{tabular}{ccc}
+        \toprule
+        Robo & Temblor & $P(\text{Alarma})$ \\
+        \midrule
+        V & V & 0.95 \\
+        V & F & 0.94 \\
+        F & V & 0.29 \\
+        F & F & 0.001 \\
+        \bottomrule
+    \end{tabular}
+    \qquad
+    \begin{tabular}{cc}
+        \toprule
+        Alarma & $P(\text{John})$ \\
+        \midrule
+        V & 0.90 \\
+        F & 0.05 \\
+        \bottomrule
+    \end{tabular}
+    \qquad
+    \begin{tabular}{cc}
+        \toprule
+        Alarma & $P(\text{Mary})$ \\
+        \midrule
+        V & 0.70 \\
+        F & 0.01 \\
+        \bottomrule
+    \end{tabular}
+    \caption{CPTs de la red: la de Alarma tiene $2^2=4$ filas porque tiene 2 padres; John y Mary tienen 1 padre cada
+    uno (Alarma), así que sus CPTs tienen 2 filas.}
+\end{table}

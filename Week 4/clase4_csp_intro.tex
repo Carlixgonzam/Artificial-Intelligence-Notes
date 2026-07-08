@@ -31,4 +31,28 @@ Asigna valores a variables una por una; retrocede cuando se viola una restricci�
     \item \textbf{Least Constraining Value}: valor que deja más opciones para las demás variables.
 \end{enumerate}
 
-% Agrega aquí ejemplo: coloreado de grafos, N-reinas, Sudoku
+\begin{example}[Coloreado de un mapa]
+    Cuatro regiones $W, X, Y, Z$ deben colorearse con $\{$rojo, verde, azul$\}$ de modo que regiones vecinas tengan
+    colores distintos. Las adyacencias son: $W$-$X$, $W$-$Y$, $X$-$Y$, $X$-$Z$, $Y$-$Z$.
+\end{example}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  var/.style={draw=black, thick, circle, minimum size=9mm, font=\small}
+]
+\node[var] (W) at (0,2)   {$W$};
+\node[var] (X) at (2,2)   {$X$};
+\node[var] (Y) at (0,0)   {$Y$};
+\node[var] (Z) at (2,0)   {$Z$};
+
+\draw[thick] (W) -- (X);
+\draw[thick] (W) -- (Y);
+\draw[thick] (X) -- (Y);
+\draw[thick] (X) -- (Z);
+\draw[thick] (Y) -- (Z);
+\end{tikzpicture}
+\caption{Grafo de restricciones del CSP: cada nodo es una variable (región) y cada arista es una restricción binaria
+de desigualdad con su vecina. $X$ y $Y$ tienen grado 3 (las más restringidas); son buenas candidatas para asignar
+primero según la heurística de grado.}
+\end{figure}

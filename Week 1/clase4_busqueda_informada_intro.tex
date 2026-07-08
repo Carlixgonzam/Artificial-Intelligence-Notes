@@ -8,9 +8,9 @@
 $h(n)$ es una función que estima el costo desde el nodo $n$ hasta la meta más cercana. Debe ser \textbf{admisible}: nunca sobreestima el costo real.
 \end{definition}
 
-\begin{alertbox}
+\begin{remark}
 Una heurística es \textbf{admisible} si $h(n) \leq h^*(n)$ para todo $n$, donde $h^*(n)$ es el costo real al llegar a la meta.
-\end{alertbox}
+\end{remark}
 
 \subsection{Greedy Best-First Search}
 
@@ -38,4 +38,45 @@ $$h(n) \leq c(n, a, n') + h(n')$$
 La consistencia implica admisibilidad.
 \end{definition}
 
-% Agrega aquí ejemplos de heurísticas: distancia Manhattan, euclidiana, etc.
+\begin{example}[Heurísticas comunes en una cuadrícula]
+    Para un agente que se mueve en una cuadrícula 2D desde $(x_1,y_1)$ hasta $(x_2,y_2)$:
+    \begin{itemize}
+        \item \textbf{Distancia Manhattan}: $h(n) = |x_1-x_2| + |y_1-y_2|$. Admisible si el agente solo se mueve en
+        horizontal/vertical (no sobreestima, porque es exactamente el número mínimo de pasos sin obstáculos).
+        \item \textbf{Distancia euclidiana}: $h(n) = \sqrt{(x_1-x_2)^2 + (y_1-y_2)^2}$. Admisible si se permite
+        movimiento diagonal, ya que nunca es mayor que el camino real.
+    \end{itemize}
+    Usar Manhattan cuando solo hay 4 movimientos posibles evita sobreestimar; usarla con movimiento diagonal
+    permitido violaría la admisibilidad, porque el camino real podría ser más corto que la suma de catetos.
+\end{example}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  nodo/.style={draw=black, thick, circle, minimum size=11mm, font=\scriptsize},
+  descartado/.style={draw=black, thick, dashed, circle, minimum size=11mm, font=\scriptsize},
+  meta/.style={draw=black, thick, double, circle, minimum size=11mm, font=\scriptsize}
+]
+\node[nodo] (arad)     at (0,0)    {\shortstack{A\\$g0,h366$}};
+\node[nodo] (sibiu)    at (3,0.9)  {\shortstack{S\\$g140,h253$}};
+\node[nodo] (zerind)   at (3,-0.9) {\shortstack{Z\\$g75,h374$}};
+\node[nodo] (fagaras)  at (6,2.0)  {\shortstack{F\\$g239,h178$}};
+\node[nodo] (rimnicu)  at (6,0.2)  {\shortstack{R\\$g220,h193$}};
+\node[descartado] (bfagaras) at (9,2.0)  {\shortstack{B\\$g450,h0$}};
+\node[nodo] (pitesti) at (9,0.2)  {\shortstack{P\\$g317,h100$}};
+\node[meta] (bpitesti) at (12,0.2) {\shortstack{B\\$g418,h0$}};
+
+\draw[-{Latex},thick] (arad) -- (sibiu);
+\draw[-{Latex},thick] (arad) -- (zerind);
+\draw[-{Latex},thick] (sibiu) -- (fagaras);
+\draw[-{Latex},thick] (sibiu) -- (rimnicu);
+\draw[-{Latex},thick,dashed] (fagaras) -- (bfagaras);
+\draw[-{Latex},thick] (rimnicu) -- (pitesti);
+\draw[-{Latex},thick] (pitesti) -- (bpitesti);
+\end{tikzpicture}
+\caption{Traza de A* sobre el mapa de Rumania (heurística: distancia en línea recta a Bucarest). A* siempre expande
+el nodo de menor $f(n)=g(n)+h(n)$ de la frontera. Aunque Fagaras (F) llega primero a Bucarest con $f=450$ (nodo
+punteado: se genera pero \textbf{se descarta}), Rimnicu (R) tiene $f=220+193=413$, menor que $f(F)=239+178=417$, así
+que A* explora primero $R \to$ Pitesti (P) con $f=317+100=417$. Al final, la meta alcanzada por Pitesti tiene
+$f=418$, menor que los $450$ de la rama de Fagaras, así que esa es la \textbf{solución óptima} (nodo de doble borde).}
+\end{figure}

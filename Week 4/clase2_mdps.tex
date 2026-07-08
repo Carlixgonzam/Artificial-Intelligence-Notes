@@ -38,4 +38,36 @@ $$U^*(s) = \max_a \sum_{s'} P(s' \mid s, a) \left[ R(s, a, s') + \gamma U^*(s') 
     \item \textbf{Policy Iteration}: alterna entre evaluación de política y mejora de política.
 \end{itemize}
 
-% Agrega aquí ejemplo del mundo de cuadrículas (grid world)
+\begin{example}[Grid world $4\times 3$]
+    El agente se mueve en una cuadrícula de $4\times 3$ celdas. La celda $(2,2)$ es un muro (no se puede entrar). Los
+    estados terminales son $(4,3)$ con recompensa $+1$ y $(4,2)$ con recompensa $-1$; cada movimiento a un estado no
+    terminal cuesta $R(s)=-0.04$. Las acciones son deterministas en este ejemplo simplificado ($\gamma=1$).
+\end{example}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  celda/.style={draw=black, thick, minimum size=13mm, font=\small},
+  muro/.style={draw=black, thick, fill=black!15, minimum size=13mm, font=\small}
+]
+\foreach \x in {1,2,3,4} \foreach \y in {1,2,3} {
+  \node[celda] at (\x*13mm,\y*13mm) {};
+}
+\node[muro] at (2*13mm,2*13mm) {};
+\node[celda, font=\small] at (4*13mm,3*13mm) {$+1$};
+\node[celda, font=\small] at (4*13mm,2*13mm) {$-1$};
+\node[celda, font=\small] at (1*13mm,1*13mm) {inicio};
+\end{tikzpicture}
+\caption{Grid world clásico $4\times 3$: la celda gris en $(2,2)$ es un muro; las metas están en $(4,3)$ ($+1$) y
+$(4,2)$ ($-1$). Cada paso no terminal cuesta $R(s)=-0.04$, lo que incentiva llegar rápido a la meta positiva.}
+\end{figure}
+
+\begin{example}[Un paso de Value Iteration]
+    Supóngase que, en una iteración anterior, $U(3,3)=0.85$ (celda justo a la izquierda de la meta $+1$) y que desde
+    $(3,2)$ la acción \textit{arriba} tiene efecto determinista hacia $(3,3)$. Aplicando la ecuación de Bellman:
+    \[
+        U(3,2) \leftarrow R(3,2) + \gamma \cdot U(3,3) = -0.04 + 1 \cdot 0.85 = 0.81
+    \]
+    En cada iteración, los valores altos cerca de la meta $+1$ se van propagando hacia atrás, celda por celda, hasta
+    que todos los $U(s)$ convergen.
+\end{example}

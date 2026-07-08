@@ -6,11 +6,11 @@
 
 Cuando el entorno es \textbf{parcialmente observable} o \textbf{estocástico}, se usa probabilidad para representar la incertidumbre.
 
-\begin{conceptbox}
+\begin{definition}[Probabilidad a priori y condicional]
 La \textbf{probabilidad a priori} (o incondicional) $P(A)$ representa el grado de creencia sin ninguna evidencia adicional.
 
 La \textbf{probabilidad condicional} $P(A \mid B) = \dfrac{P(A \land B)}{P(B)}$ representa el grado de creencia dado que $B$ es verdadero.
-\end{conceptbox}
+\end{definition}
 
 \subsection{Regla de Bayes}
 
@@ -22,6 +22,34 @@ $$P(A \mid B) = \frac{P(B \mid A) \cdot P(A)}{P(B)}$$
     \item $P(B)$: probabilidad marginal de $B$ (normalizador)
     \item $P(A \mid B)$: probabilidad a posteriori
 \end{itemize}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  caja/.style={draw=black, thick, rectangle, rounded corners=1pt, minimum width=3.4cm, minimum height=1cm, font=\small}
+]
+\node[caja] (causa) at (0,0) {Causa (hipótesis $A$)};
+\node[caja] (efecto) at (6,0) {Efecto (evidencia $B$)};
+
+\draw[-{Latex},thick] ([yshift=4mm]causa.east) -- node[above,font=\scriptsize]{$P(B\mid A)$: causal, fácil de estimar} ([yshift=4mm]efecto.west);
+\draw[-{Latex},thick] ([yshift=-4mm]efecto.west) -- node[below,font=\scriptsize]{$P(A\mid B)$: diagnóstico, lo que se busca} ([yshift=-4mm]causa.east);
+\end{tikzpicture}
+\caption{La regla de Bayes permite invertir el sentido del razonamiento: de un modelo \textit{causal}
+$P(\text{efecto}\mid\text{causa})$, que suele conocerse de antemano (estadísticas, estudios clínicos), se obtiene la
+probabilidad \textit{diagnóstica} $P(\text{causa}\mid\text{efecto})$, que es la que realmente interesa inferir.}
+\end{figure}
+
+\begin{example}[Diagnóstico médico]
+    Sea $M$ = \textit{tiene meningitis} y $R$ = \textit{tiene rigidez de cuello}. Se sabe que $P(R\mid M) = 0.7$ (la meningitis
+    causa rigidez de cuello el 70\% de las veces), $P(M) = 1/50000$ (prevalencia a priori) y $P(R) = 0.01$ (rigidez de
+    cuello en la población general). Por la regla de Bayes:
+    \[
+        P(M \mid R) = \frac{P(R\mid M) \cdot P(M)}{P(R)} = \frac{0.7 \times \frac{1}{50000}}{0.01} = 0.0014
+    \]
+    Aunque la rigidez de cuello es un síntoma fuerte de meningitis ($70\%$), la probabilidad posterior sigue siendo
+    baja porque la meningitis es muy rara a priori ($P(M)$ pequeño) y la rigidez de cuello es relativamente común por
+    otras causas ($P(R)$ no tan pequeño).
+\end{example}
 
 \subsection{Distribuciones de Probabilidad}
 

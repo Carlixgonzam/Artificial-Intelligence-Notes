@@ -1,15 +1,31 @@
 % Clase 3 — Ejercicios de Razonamiento bajo Incertidumbre
 \section{Ejercicios: Razonamiento bajo Incertidumbre}
 
-\begin{notebox}
+\begin{remark}
 Repaso de probabilidad, redes bayesianas y MDPs.
-\end{notebox}
-
-% ---- Espacio para ejercicios en clase ----
+\end{remark}
 
 \begin{exercise}
-Dada la red bayesiana del ejemplo (Burglar-Earthquake-Alarm), calcula $P(\text{Burglary} \mid \text{JohnCalls} = T, \text{MaryCalls} = T)$ usando enumeración.
+Dada la red bayesiana del ejemplo (Robo-Temblor-Alarma-John-Mary), calcula $P(\text{Robo} \mid \text{John} = V, \text{Mary} = V)$ usando enumeración.
 
-\textbf{Solución:}
-% ...
+\textbf{Solución:} Por la regla de la cadena sobre el orden topológico de la red:
+\[
+    P(b \mid j, m) = \alpha \sum_{e} P(b) P(e) \sum_{a} P(a \mid b, e)\, P(j \mid a)\, P(m \mid a)
+\]
+Para $b=V$ (usando las CPTs de la clase anterior):
+\begin{align*}
+    \text{(e=V):}\ & 0.002 \cdot \big[0.95\cdot0.9\cdot0.7 + 0.05\cdot0.05\cdot0.01\big] = 0.002 \cdot 0.598525 = 0.0011971 \\
+    \text{(e=F):}\ & 0.998 \cdot \big[0.94\cdot0.9\cdot0.7 + 0.06\cdot0.05\cdot0.01\big] = 0.998 \cdot 0.59223 = 0.5910575
+\end{align*}
+Sumando y multiplicando por $P(b)=0.001$: $P(b,j,m) = 0.001 \cdot 0.5922546 = 0.00059225$.
+
+Repitiendo el mismo cálculo para $b=F$ (con $P(a\mid\neg b,e)$ de la CPT) se obtiene $P(\neg b,j,m) = 0.00149188$.
+
+Normalizando con $\alpha = 1/(0.00059225+0.00149188) \approx 479.8$:
+\[
+    P(\text{Robo}\mid j,m) \approx 0.284 \qquad P(\neg\text{Robo}\mid j,m) \approx 0.716
+\]
+A pesar de que John y Mary llamaron, la probabilidad de robo sigue siendo menor que $0.5$: la tasa base de robos es
+tan baja ($P(\text{Robo})=0.001$) que dos llamadas, aunque son evidencia fuerte, no son suficientes para hacerlo más
+probable que improbable.
 \end{exercise}

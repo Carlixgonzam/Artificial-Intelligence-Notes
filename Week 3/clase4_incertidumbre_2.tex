@@ -18,4 +18,29 @@ donde $\mathbf{y}$ son las variables ocultas y $\alpha$ es el normalizador.
     \item \textbf{Tabla de probabilidad condicional} (CPT): especifica $P(X \mid \text{Parents}(X))$.
 \end{itemize}
 
-% Agrega aquí ejercicios de inferencia probabilística
+\begin{example}[Enumeración sobre Dolor de muela, Caries y Detector]
+    Sea la distribución conjunta completa $P(\text{Caries}, \text{Dolor}, \text{Detector})$:
+    \begin{table}[H]
+        \centering
+        \begin{tabular}{lcccc}
+            \toprule
+             & \multicolumn{2}{c}{Dolor} & \multicolumn{2}{c}{$\neg$Dolor} \\
+             & Detector & $\neg$Detector & Detector & $\neg$Detector \\
+            \midrule
+            Caries      & 0.108 & 0.012 & 0.072 & 0.008 \\
+            $\neg$Caries & 0.016 & 0.064 & 0.144 & 0.576 \\
+            \bottomrule
+        \end{tabular}
+        \caption{Distribución conjunta completa (suma de las 8 celdas = 1).}
+    \end{table}
+    Para calcular $P(\text{Caries} \mid \text{Dolor})$ por enumeración, se \textbf{suma sobre la variable oculta}
+    Detector, dejando fija la evidencia Dolor:
+    \[
+        P(\text{Caries} \mid \text{Dolor}) = \alpha \sum_{\text{det}} P(\text{Caries}, \text{Dolor}, \text{det})
+        = \alpha \, (0.108 + 0.012) = \alpha \, (0.12)
+    \]
+    De forma análoga, $P(\neg\text{Caries} \mid \text{Dolor}) = \alpha\,(0.016+0.064) = \alpha\,(0.08)$. Normalizando
+    con $\alpha = 1/(0.12+0.08) = 5$: $P(\text{Caries}\mid\text{Dolor}) = 0.6$ y $P(\neg\text{Caries}\mid\text{Dolor}) =
+    0.4$. Este es el patrón general de inferencia por enumeración: fijar la evidencia, sumar sobre las variables
+    ocultas, y normalizar al final.
+\end{example}

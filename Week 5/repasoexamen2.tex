@@ -6,18 +6,18 @@ Las decisiones optimas en juegos se componen de:
 \end{enumerate}
 
 \begin{lstlisting}[language=Python]
-def max-value(estado):
+def max_value(estado):
     inicializar = -infinito
     para cada sucesor del estado:
-        v = max(v, min-value(sucesor))
+        v = max(v, min_value(sucesor))
     return v
 \end{lstlisting}
 
 \begin{lstlisting}[language=Python]
-    def min-value(estado):
+    def min_value(estado):
         inicializar = +infinito
         para cada sucesor del estado:
-            v = min(v, max-value(sucesor))
+            v = min(v, max_value(sucesor))
         return v
     \end{lstlisting}
 
@@ -29,20 +29,20 @@ def max-value(estado):
   level 2/.style={sibling distance=14mm},
   maxnode/.style={
     regular polygon, regular polygon sides=3,
-    draw=pink!70!black, fill=pink!25, thick,
+    draw=black, thick,
     minimum size=8mm, inner sep=0pt, font=\small\bfseries
   },
   minnode/.style={
     regular polygon, regular polygon sides=3, shape border rotate=180,
-    draw=magenta!60!black, fill=pink!45, thick,
+    draw=black, thick,
     minimum size=8mm, inner sep=0pt, font=\small\bfseries
   },
   leaf/.style={
     rectangle, rounded corners=1pt,
-    draw=pink!80!black, fill=pink!10, thick,
+    draw=black, thick,
     minimum size=7mm, font=\small
   },
-  edge from parent/.style={draw=magenta!50!black, thick, -{Latex[length=2mm]}}
+  edge from parent/.style={draw=black, thick, -{Latex[length=2mm]}}
 ]
 
 \node[maxnode] (root) {3}
@@ -62,8 +62,8 @@ def max-value(estado):
     child { node[leaf] {2} }
   };
 
-\node[left=6mm of root, font=\small\bfseries\itshape, text=magenta!70!black] {MAX};
-\node[left=6mm of A, font=\small\bfseries\itshape, text=magenta!70!black] {MIN};
+\node[left=6mm of root, font=\small\bfseries\itshape] {MAX};
+\node[left=6mm of A, font=\small\bfseries\itshape] {MIN};
 
 \end{tikzpicture}
 \caption{Árbol de búsqueda Minimax: el nodo MAX (raíz) elige el sucesor con mayor valor entre los mínimos que garantizan los nodos MIN; los valores se propagan de las hojas hacia arriba.}
@@ -225,10 +225,10 @@ por ser terminal).
 
 \section{CSP: Repaso rápido}
 
-\begin{notebox}
+\begin{remark}
     El detalle completo de estas técnicas (con ejemplos y el ejercicio del mapa de Australia) está en las notas de la
     Semana 5. Esta es solo una tabla de repaso rápido para el examen.
-\end{notebox}
+\end{remark}
 
 \begin{table}[H]
     \centering

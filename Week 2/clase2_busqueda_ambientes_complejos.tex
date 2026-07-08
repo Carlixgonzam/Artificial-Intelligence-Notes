@@ -8,6 +8,8 @@ A diferencia de la búsqueda sistemática, la búsqueda local opera sobre un \te
 
 \subsection{Hill Climbing (Ascenso de Colina)}
 
+Hill climbing mantiene un único estado actual y se mueve al vecino con mejor valor, deteniéndose cuando ningún
+vecino mejora (un óptimo local respecto al movimiento permitido).
 
 \textbf{Problemas}:
 \begin{itemize}
@@ -17,9 +19,37 @@ A diferencia de la búsqueda sistemática, la búsqueda local opera sobre un \te
 
 \textbf{Variantes}: Hill climbing estocástico, reinicio aleatorio, \textit{simulated annealing}.
 
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=1]
+\draw[thick,-{Latex}] (-0.3,0) -- (10.3,0) node[right,font=\scriptsize]{estado};
+\draw[thick,-{Latex}] (0,-0.3) -- (0,4.3) node[above,font=\scriptsize]{valor};
+
+\draw[thick] plot[smooth] coordinates {
+  (0,0.6) (1,1.8) (1.6,1.6) (2.4,1.6) (3.2,2.0) (4,0.9) (4.8,0.6)
+  (5.6,2.6) (6.4,3.9) (7.2,2.8) (8,1.4) (8.8,2.2) (9.6,2.5)
+};
+
+\node[font=\scriptsize] at (1.05,2.15) {máximo local};
+\node[font=\scriptsize] at (2.0,2.0) {meseta};
+\node[font=\scriptsize] at (6.4,4.3) {máximo global};
+\draw[dashed] (6.4,0) -- (6.4,3.9);
+\end{tikzpicture}
+\caption{Paisaje de valores de estados: hill climbing puede quedar atrapado en el máximo local de la izquierda o en
+la meseta, sin llegar nunca al máximo global de la derecha, porque solo acepta movimientos que mejoran el valor
+actual.}
+\end{figure}
+
 \subsection{Simulated Annealing}
 
 Permite movimientos malos con probabilidad $e^{\Delta E / T}$ donde $T$ decrece con el tiempo. Garantiza convergencia al óptimo global si $T$ baja suficientemente despacio.
+
+\begin{example}[Aceptar un movimiento malo]
+    Si un movimiento empeora el valor en $\Delta E = -2$ y la temperatura actual es $T=1$, la probabilidad de
+    aceptarlo de todos modos es $e^{\Delta E/T} = e^{-2/1} \approx 0.135$ (13.5\%). Con $T=4$ (temperatura más alta,
+    típico al inicio), esa misma probabilidad sube a $e^{-2/4} \approx 0.607$ (60.7\%): al principio el algoritmo
+    explora más libremente escapando de máximos locales; al final ($T \to 0$) se comporta como hill climbing puro.
+\end{example}
 
 \subsection{Algoritmos Genéticos}
 
@@ -31,4 +61,30 @@ Operadores:
     \item \textbf{Cruzamiento} (\textit{crossover}): combina dos individuos para producir descendencia.
     \item \textbf{Mutación}: cambia aleatoriamente genes con baja probabilidad.
 \end{enumerate}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  caja/.style={draw=black, thick, rectangle, rounded corners=1pt, minimum width=3.1cm, minimum height=1cm, font=\small, align=center}
+]
+\node[caja] (pob) at (0,0)     {\shortstack{Población\\inicial}};
+\node[caja] (sel) at (4.2,0)   {\shortstack{Selección\\(fitness)}};
+\node[caja] (cru) at (4.2,-2.2) {\shortstack{Cruzamiento\\(crossover)}};
+\node[caja] (mut) at (0,-2.2)  {Mutación};
+
+\draw[-{Latex},thick] (pob) -- (sel);
+\draw[-{Latex},thick] (sel) -- (cru);
+\draw[-{Latex},thick] (cru) -- (mut);
+\draw[-{Latex},thick] (mut) -- (pob) node[midway, left, font=\scriptsize]{nueva generación};
+\end{tikzpicture}
+\caption{Ciclo de un algoritmo genético: de la población actual se seleccionan padres según su aptitud, se cruzan
+para producir hijos, se mutan con baja probabilidad, y la nueva generación reemplaza a la anterior.}
+\end{figure}
+
+\begin{example}[Cruzamiento de un 8-reinas codificado]
+    Si dos individuos del problema de las 8 reinas se codifican como cadenas de 8 dígitos (la fila de la reina en
+    cada columna), por ejemplo $32752411$ y $24748552$, un cruzamiento de un punto tras la posición 3 produce el hijo
+    $327$ (del primero) $+48552$ (del segundo) $= 32748552$, combinando la parte inicial de un padre con la parte
+    final del otro.
+\end{example}
 

@@ -14,11 +14,46 @@ Elimina ramas del árbol que no pueden afectar la decisión final.
 
 Con orden perfecto de movimientos: $\bigO{b^{m/2}}$ (duplica la profundidad manejable).
 
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  level distance=15mm,
+  level 1/.style={sibling distance=32mm},
+  level 2/.style={sibling distance=13mm},
+  maxnode/.style={draw=black, thick, regular polygon, regular polygon sides=3, minimum size=8mm, inner sep=0pt, font=\small},
+  minnode/.style={draw=black, thick, regular polygon, regular polygon sides=3, shape border rotate=180, minimum size=8mm, inner sep=0pt, font=\small},
+  leaf/.style={draw=black, thick, rectangle, minimum size=7mm, font=\small},
+  podado/.style={draw=black, thick, dashed, rectangle, minimum size=7mm, font=\small}
+]
+\node[maxnode] (root) {3}
+  child { node[minnode] (A) {3}
+    child { node[leaf] {3} }
+    child { node[leaf] {12} }
+  }
+  child { node[minnode] (B) {2}
+    child { node[leaf] {2} }
+    child { node[podado] {?} }
+  };
+\node[left=6mm of root, font=\scriptsize\itshape] {MAX};
+\node[left=6mm of A, font=\scriptsize\itshape] {MIN};
+\end{tikzpicture}
+\caption{Poda alfa-beta: tras explorar la rama izquierda, MAX ya garantiza al menos $\alpha=3$. Al explorar la rama
+derecha, MIN encuentra un hijo con valor $2$, así que ya sabe que esa rama vale $\leq 2 < \alpha$: como MAX nunca
+elegiría un valor menor que $3$ pudiendo garantizarlo, el segundo hijo de $B$ (nodo punteado) se \textbf{poda} sin
+evaluarlo, sin cambiar la decisión final.}
+\end{figure}
+
 \subsection{Juegos con Incertidumbre: Expectiminimax}
 
 Para juegos con elementos aleatorios (dados) se agregan \textbf{nodos azar}:
 
 $$\text{EXPECTIMINIMAX}(s) = \sum_r P(r) \cdot \text{EXPECTIMINIMAX}(\text{RESULT}(s, r))$$
+
+\begin{example}[Nodo de azar con una moneda]
+    Si en un nodo de azar una moneda justa decide entre dos resultados con utilidades $8$ y $2$, el valor del nodo de
+    azar es $0.5 \cdot 8 + 0.5 \cdot 2 = 5$, sin importar si el nodo padre es MAX o MIN: el valor esperado se calcula
+    \textit{antes} de que el jugador siguiente decida.
+\end{example}
 
 \subsection{Funciones de Evaluación}
 

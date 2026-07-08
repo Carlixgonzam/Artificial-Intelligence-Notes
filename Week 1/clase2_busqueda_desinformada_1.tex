@@ -17,6 +17,45 @@ Un problema de búsqueda se define con cinco componentes:
 
 La \textbf{solución} es una secuencia de acciones que lleva del estado inicial a un estado meta. Una \textbf{solución óptima} minimiza el costo total del camino.
 
+\begin{example}[Mapa de Rumania]
+    Un viajero está en la ciudad de Arad y debe llegar a Bucarest.
+    \begin{itemize}
+        \item \textbf{Estado inicial}: $Arad$.
+        \item \textbf{Modelo de transición}: $\text{RESULT}(Arad, \text{ir a Zerind}) = Zerind$, y así para cada carretera.
+        \item \textbf{Costo de acción}: la distancia en kilómetros de cada carretera.
+        \item \textbf{Test de meta}: $\text{estado} = Bucarest$.
+        \item \textbf{Espacio de estados}: el grafo de ciudades rumanas conectadas por carreteras.
+    \end{itemize}
+\end{example}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  ciudad/.style={draw=black, thick, circle, minimum size=9mm, font=\small},
+  costo/.style={font=\scriptsize}
+]
+\node[ciudad] (arad)     at (0,0)   {A};
+\node[ciudad] (zerind)   at (2.2,1.3) {Z};
+\node[ciudad] (sibiu)    at (2.2,-1.3) {S};
+\node[ciudad] (oradea)   at (4.4,1.3) {O};
+\node[ciudad] (fagaras)  at (4.6,-0.3) {F};
+\node[ciudad] (rimnicu)  at (4.6,-2.3) {R};
+\node[ciudad] (bucarest) at (7.2,-1.0) {B};
+
+\draw[thick] (arad) -- node[costo,above]{140} (sibiu);
+\draw[thick] (arad) -- node[costo,above]{75} (zerind);
+\draw[thick] (zerind) -- node[costo,right]{71} (oradea);
+\draw[thick] (sibiu) -- node[costo,above]{151} (oradea);
+\draw[thick] (sibiu) -- node[costo,above]{99} (fagaras);
+\draw[thick] (sibiu) -- node[costo,below]{80} (rimnicu);
+\draw[thick] (fagaras) -- node[costo,above]{211} (bucarest);
+\draw[thick] (rimnicu) -- node[costo,below]{146} (bucarest);
+\end{tikzpicture}
+\caption{Fragmento del espacio de estados del mapa de Rumania: nodos = ciudades, aristas = carreteras con su costo
+(distancia en km). Este grafo es la representación del \textit{problema}; el árbol de búsqueda se construye
+explorándolo a partir de $Arad$.}
+\end{figure}
+
 \subsection{Nodos vs. Estados}
 
 Un \textbf{nodo} en el árbol de búsqueda contiene:

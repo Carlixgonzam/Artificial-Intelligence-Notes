@@ -139,6 +139,33 @@ atascado y nunca encontrar una solución aunque exista (no hay noción de retroc
     Regiones: WA, NT, SA, Q, NSW, V, T (Tasmania es una isla, no tiene vecinos). Adyacencias: WA-NT, WA-SA, NT-SA, NT-Q,
     SA-Q, SA-NSW, SA-V, Q-NSW, NSW-V.
 
+    \begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+      var/.style={draw=black, thick, circle, minimum size=8mm, font=\small}
+    ]
+    \node[var] (WA)  at (0,1.5)   {WA};
+    \node[var] (NT)  at (1.8,2.6) {NT};
+    \node[var] (SA)  at (1.8,0.6) {SA};
+    \node[var] (Q)   at (3.6,2.6) {Q};
+    \node[var] (NSW) at (3.6,0.6) {NSW};
+    \node[var] (V)   at (2.7,-1)  {V};
+    \node[var] (T)   at (5.4,-1)  {T};
+
+    \draw[thick] (WA) -- (NT);
+    \draw[thick] (WA) -- (SA);
+    \draw[thick] (NT) -- (SA);
+    \draw[thick] (NT) -- (Q);
+    \draw[thick] (SA) -- (Q);
+    \draw[thick] (SA) -- (NSW);
+    \draw[thick] (SA) -- (V);
+    \draw[thick] (Q) -- (NSW);
+    \draw[thick] (NSW) -- (V);
+    \end{tikzpicture}
+    \caption{Grafo de restricciones del mapa de Australia: SA es vecina de 5 regiones (grado 5), la más restringida
+    del grafo; T (Tasmania) no tiene aristas porque es una isla sin vecinos.}
+    \end{figure}
+
     \textbf{Solución:}
 
     Todas las variables (salvo T) parten con $|D|=3$: hay empate en MRV, así que se desempata con la \textbf{heurística
@@ -242,6 +269,24 @@ $(1,1)$ y solo percibe su casilla actual.
     pared), \emph{scream} (grito, al matar al Wumpus con una flecha).
     \item \textbf{Acciones}: avanzar, girar izquierda/derecha, agarrar, disparar, subir (para salir de la cueva).
 \end{itemize}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  celda/.style={draw=black, thick, minimum size=13mm, font=\scriptsize},
+  x=13mm, y=13mm
+]
+\foreach \x in {1,2,3,4} \foreach \y in {1,2,3,4} { \node[celda] at (\x,\y) {}; }
+\node[celda] at (1,1) {inicio};
+\node[celda] at (1,2) {seguro};
+\node[celda] at (2,1) {\shortstack{seguro\\brisa}};
+\node[celda] at (2,2) {?};
+\node[celda] at (3,1) {?};
+\end{tikzpicture}
+\caption{Estado de conocimiento tras percibir en $(1,1)$ sin hedor ni brisa (por lo que $(1,2)$ y $(2,1)$ son
+seguras), y luego en $(2,1)$ brisa sin hedor: hay un pozo en $(2,2)$ o en $(3,1)$, pero no se sabe cuál con la
+información acumulada hasta ahora.}
+\end{figure}
 
 \begin{example}[Inferencia en el mundo del Wumpus]
     Si en $(1,1)$ el agente no percibe ni hedor ni brisa, la regla $Breeze_{(x,y)} \Leftrightarrow \bigvee \text{Pit}_{\text{vecino}}$
