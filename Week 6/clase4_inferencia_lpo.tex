@@ -31,5 +31,97 @@ donde $\theta = \text{UNIFY}(\ell_i, m_k)$.
     \item \textbf{Refutación por resolución}: completa para LPO (Teorema de Completitud de Gödel).
 \end{itemize}
 
-% Agrega aquí ejemplos de encadenamiento y resolución
+\subsection{Ejemplo: El caso de Nono (¿Es West un criminal?)}
+
+\begin{example}[Base de conocimiento]
+    \begin{enumerate}
+        \item $American(x) \land Weapon(y) \land Sells(x,y,z) \land Hostile(z) \Rightarrow Criminal(x)$
+        \item $Owns(Nono, M1)$
+        \item $Missile(M1)$
+        \item $Missile(x) \land Owns(Nono,x) \Rightarrow Sells(West,x,Nono)$
+        \item $Missile(x) \Rightarrow Weapon(x)$
+        \item $Enemy(x,America) \Rightarrow Hostile(x)$
+        \item $American(West)$
+        \item $Enemy(Nono,America)$
+    \end{enumerate}
+    Meta: probar $Criminal(West)$.
+\end{example}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  goal/.style={draw=black, thick, rectangle, rounded corners=1pt, inner sep=4pt, font=\small},
+  fact/.style={draw=black, thick, rectangle, rounded corners=1pt, inner sep=3pt, font=\scriptsize}
+]
+\node[fact] (am) {$American(West)$};
+\node[fact, right=9mm of am] (wp) {$Weapon(M1)$};
+\node[fact, right=9mm of wp] (se) {$Sells(West,M1,Nono)$};
+\node[fact, right=9mm of se] (ho) {$Hostile(Nono)$};
+
+\node[fact, below=13mm of wp] (mi1) {$Missile(M1)$};
+\node[fact, below=13mm of se, xshift=-16mm] (mi2) {$Missile(M1)$};
+\node[fact, right=9mm of mi2] (ow) {$Owns(Nono,M1)$};
+\node[fact, right=9mm of ow] (en) {$Enemy(Nono,America)$};
+
+\node[goal, above=15mm of se, xshift=-10mm] (root) {$Criminal(West)$};
+
+\draw[-{Latex},thick] (root) -- (am);
+\draw[-{Latex},thick] (root) -- (wp);
+\draw[-{Latex},thick] (root) -- (se);
+\draw[-{Latex},thick] (root) -- (ho);
+
+\draw[-{Latex},thick] (wp) -- (mi1);
+\draw[-{Latex},thick] (se) -- (mi2);
+\draw[-{Latex},thick] (se) -- (ow);
+\draw[-{Latex},thick] (ho) -- (en);
+\end{tikzpicture}
+\caption{Árbol de encadenamiento hacia atrás para $Criminal(West)$: los cuatro hijos de la raíz son las
+\textbf{cuatro submetas} que exige la conjunción de la regla 1 (todas deben probarse), y $Missile(M1)$ y
+$Owns(Nono,M1)$ son las dos submetas que exige la regla 4. Cada hoja es un hecho que ya está en la KB (reglas 2, 3, 7
+y 8).}
+\end{figure}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{lll}
+        \toprule
+        Submeta & Regla utilizada & Qué se obtiene \\
+        \midrule
+        $Criminal(West)$          & Regla 1 & Se descompone en 4 submetas (AND) \\
+        $American(West)$          & Regla 7 (hecho) & Submeta resuelta directamente \\
+        $Weapon(M1)$              & Regla 5 & Se reduce a la submeta $Missile(M1)$ \\
+        $Missile(M1)$             & Regla 3 (hecho) & Submeta resuelta directamente \\
+        $Sells(West,M1,Nono)$     & Regla 4 & Se reduce a $Missile(M1) \land Owns(Nono,M1)$ \\
+        $Owns(Nono,M1)$           & Regla 2 (hecho) & Submeta resuelta directamente \\
+        $Hostile(Nono)$           & Regla 6 & Se reduce a $Enemy(Nono,America)$ \\
+        $Enemy(Nono,America)$     & Regla 8 (hecho) & Submeta resuelta directamente \\
+        \bottomrule
+    \end{tabular}
+    \caption{Traza del encadenamiento hacia atrás: en cada fila se indica qué regla dispara la reducción y qué
+    submeta nueva (o hecho) se obtiene, hasta que todas las hojas quedan probadas y $Criminal(West)$ queda demostrado.}
+\end{table}
+
+\begin{exercise}
+    \begin{enumerate}
+        \item Usando la misma KB, construya la traza de \textbf{encadenamiento hacia adelante}: parta de los hechos
+        (reglas 2, 3, 7, 8) y muestre, en una tabla como la anterior, en qué orden se disparan las reglas 5, 6, 4 y 1
+        hasta derivar $Criminal(West)$.
+        \item Compare las dos trazas: ¿por qué el encadenamiento hacia atrás solo explora los hechos relevantes para
+        la meta, mientras que el hacia adelante puede derivar hechos que nunca se usan?
+        \item Dado el hecho adicional $Enemy(Nono, UK)$ (en vez de $America$), ¿sigue siendo posible probar
+        $Criminal(West)$ con esta KB? Justifique cuál regla falla.
+    \end{enumerate}
+\end{exercise}
+
+\begin{exercise}[Resolución en LPO]
+    Sean las cláusulas
+    \[
+        \neg Ama(x,\ Padre(x)) \lor Feliz(x) \qquad \text{y} \qquad Ama(\text{Juan},\ Padre(\text{Juan})).
+    \]
+    \begin{enumerate}
+        \item Encuentre el unificador $\theta$ entre los literales complementarios.
+        \item Aplique $\text{SUBST}(\theta, \cdot)$ a la cláusula resolvente resultante.
+        \item ¿Qué hecho queda demostrado?
+    \end{enumerate}
+\end{exercise}
 

@@ -27,9 +27,43 @@ Un \textbf{modelo} en LPO especifica:
 $$\forall x\ P(x) \equiv \neg \exists x\ \neg P(x)$$
 $$\exists x\ P(x) \equiv \neg \forall x\ \neg P(x)$$
 
-\begin{alertbox}
+\begin{remark}
 $\forall x\ (P(x) \Rightarrow Q(x))$ es diferente de $\forall x\ (P(x) \land Q(x))$.
 El cuantificador universal normalmente usa $\Rightarrow$; el existencial usa $\land$.
-\end{alertbox}
+\end{remark}
 
-% Agrega aquí ejemplos de traducción entre lenguaje natural y LPO
+\subsection{Ejemplo: Modelo en LPO}
+
+\begin{example}[Modelo simple]
+    Sea el dominio $D = \{\text{Juan}, \text{Maria}, \text{Pedro}\}$ y el predicado binario $Padre(x,y)$ ("$x$ es
+    padre de $y$"). La interpretación de la Figura siguiente satisface $Padre(\text{Juan},\text{Maria})$ y
+    $Padre(\text{Juan},\text{Pedro})$, y ninguna otra pareja.
+\end{example}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  obj/.style={draw=black, thick, circle, minimum size=11mm, font=\small}
+]
+\node[obj] (juan)  at (0,0)   {Juan};
+\node[obj] (maria) at (3.2,1) {Maria};
+\node[obj] (pedro) at (3.2,-1){Pedro};
+
+\draw[-{Latex},thick] (juan) -- node[above, font=\scriptsize]{$Padre$} (maria);
+\draw[-{Latex},thick] (juan) -- node[below, font=\scriptsize]{$Padre$} (pedro);
+\end{tikzpicture}
+\caption{Modelo con dominio $\{\text{Juan},\text{Maria},\text{Pedro}\}$: cada flecha es una pareja $(x,y)$ para la
+cual $Padre(x,y)$ es verdadero en este modelo. Cambiar las flechas cambia el modelo sin cambiar la sintaxis de la
+oración.}
+\end{figure}
+
+\begin{exercise}
+    Usando los predicados $Estudiante(x)$, $Curso(y)$, $Aprueba(x,y)$ y $Certificado(x,y)$, traduzca a LPO:
+    \begin{enumerate}
+        \item Todo estudiante que aprueba un curso recibe un certificado de ese curso.
+        \item Existe al menos un estudiante que no ha aprobado ningún curso.
+        \item Ningún estudiante aprueba todos los cursos.
+    \end{enumerate}
+    Para cada oración, indique si el cuantificador principal es $\forall$ o $\exists$ y justifique si el conectivo
+    correcto dentro de su alcance es $\Rightarrow$ o $\land$.
+\end{exercise}

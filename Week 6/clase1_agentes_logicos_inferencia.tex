@@ -30,3 +30,49 @@ Algoritmo de inferencia completo para lógica proposicional en CNF:
     \item \textbf{WalkSAT}: búsqueda local incompleta, eficaz en la práctica para instancias satisfacibles.
 \end{itemize}
 
+\subsection{Ejemplo: Refutación por Resolución}
+
+\begin{example}[Refutación]
+    Sea $KB = \{P,\ P \Rightarrow Q,\ Q \Rightarrow R\}$ y se quiere probar $KB \models R$. Se convierte $KB \land \neg R$
+    a CNF: $\{P,\ \neg P \lor Q,\ \neg Q \lor R,\ \neg R\}$, y se aplica resolución hasta obtener la cláusula vacía
+    $\square$ (una contradicción), lo que confirma el entailment.
+\end{example}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  clause/.style={draw=black, thick, rectangle, rounded corners=1pt, inner sep=4pt, font=\small}
+]
+\node[clause] (P)   at (0,0)      {$P$};
+\node[clause] (PQ)  at (2.6,0)    {$\neg P \lor Q$};
+\node[clause] (Q)   at (1.3,-1.4) {$Q$};
+
+\node[clause] (QR)  at (4.2,-1.4) {$\neg Q \lor R$};
+\node[clause] (R)   at (2.75,-2.8) {$R$};
+
+\node[clause] (NR)  at (5.5,-2.8) {$\neg R$};
+\node[clause] (NIL) at (4.1,-4.2) {$\square$};
+
+\draw[-{Latex},thick] (P)  -- (Q);
+\draw[-{Latex},thick] (PQ) -- (Q);
+\draw[-{Latex},thick] (Q)  -- (R);
+\draw[-{Latex},thick] (QR) -- (R);
+\draw[-{Latex},thick] (R)  -- (NIL);
+\draw[-{Latex},thick] (NR) -- (NIL);
+\end{tikzpicture}
+\caption{Árbol de refutación por resolución: cada nodo se obtiene combinando los dos que apuntan hacia él; llegar a la
+cláusula vacía $\square$ demuestra que $KB \land \neg R$ es insatisfacible, es decir, $KB \models R$.}
+\end{figure}
+
+\begin{exercise}
+    Sea $KB = \{A \lor B,\ \neg A \lor C,\ \neg B \lor C,\ \neg C \lor D\}$. Se quiere probar $KB \models D$ por
+    refutación.
+    \begin{enumerate}
+        \item Escriba la cláusula que se agrega a $KB$ al negar la meta.
+        \item Aplique resolución sobre $A \lor B$ y $\neg A \lor C$, y por separado sobre $\neg B \lor C$, para derivar
+        una cláusula con únicamente $C$.
+        \item Combine el resultado anterior con $\neg C \lor D$ y con la meta negada para llegar a la cláusula vacía.
+        \item Dibuje el árbol de refutación completo, análogo al de la Figura anterior.
+    \end{enumerate}
+\end{exercise}
+

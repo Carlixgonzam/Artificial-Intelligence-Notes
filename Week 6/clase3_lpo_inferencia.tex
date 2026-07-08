@@ -33,3 +33,38 @@ Pasos para convertir a CNF:
     \item Eliminar cuantificadores universales.
     \item Distribuir $\lor$ sobre $\land$.
 \end{enumerate}
+
+\subsection{Ejemplo: Unificación}
+
+\begin{example}[Unificación de dos átomos]
+    Para unificar $Padre(x,\text{Juan})$ con $Padre(\text{Pedro},y)$, el algoritmo recorre ambas expresiones posición
+    por posición: en la primera posición $x$ debe sustituirse por $\text{Pedro}$; en la segunda, $y$ debe sustituirse
+    por $\text{Juan}$. El unificador más general es $\theta = \{x/\text{Pedro},\ y/\text{Juan}\}$.
+\end{example}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  term/.style={draw=black, thick, rectangle, rounded corners=1pt, inner sep=4pt, font=\small}
+]
+\node[term] (f1) at (0,0)   {$Padre(x,\text{Juan})$};
+\node[term] (f2) at (5.2,0) {$Padre(\text{Pedro},y)$};
+\node (theta) at (2.6,-1.6) {$\theta = \{x/\text{Pedro},\ y/\text{Juan}\}$};
+
+\draw[dashed,thick] (f1) -- (theta);
+\draw[dashed,thick] (f2) -- (theta);
+\end{tikzpicture}
+\caption{Unificación de $Padre(x,\text{Juan})$ y $Padre(\text{Pedro},y)$: aplicar $\theta$ a ambas expresiones produce
+la misma expresión, $Padre(\text{Pedro},\text{Juan})$.}
+\end{figure}
+
+\begin{exercise}
+    \begin{enumerate}
+        \item Encuentre, si existe, el unificador más general de $Quiere(x,\ Helado(x))$ y
+        $Quiere(\text{Juan},\ Helado(\text{Vainilla}))$.
+        \item Encuentre el unificador de $Hermano(x,y)$ y $Hermano(\text{Juan},y)$. ¿Por qué es necesario
+        estandarizar variables antes de unificar dos cláusulas que provienen de la misma regla?
+        \item Convierta a CNF: $\forall x\ (Estudiante(x) \Rightarrow \exists y\ (Curso(y) \land Inscrito(x,y)))$,
+        indicando en qué paso aparece la función de Skolem y qué representa.
+    \end{enumerate}
+\end{exercise}
