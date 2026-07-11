@@ -1,0 +1,405 @@
+% Clase 6 — Ejercicios resueltos: Guía de Lógica de Primer Orden (completa)
+\section{Ejercicios: Guía de Lógica de Primer Orden (con solución paso a paso)}
+
+Esta sección resuelve, de principio a fin, la \textit{Guía de Ejercicios: Lógica de Primer Orden}.
+
+\subsection{Bloque 1: Conceptos Fundamentales de LPO}
+
+\begin{enumerate}
+    \item \textit{``Una sentencia válida en LPO es verdadera en toda interpretación posible,
+    independientemente de la asignación a variables libres.''}\\
+    \textbf{Verdadero.} Por definición, una \textbf{sentencia} (a diferencia de una fórmula abierta)
+    no tiene variables libres, así que la cláusula ``independientemente de la asignación a variables
+    libres'' se cumple trivialmente (no hay ninguna que asignar); lo que exige la validez es que sea
+    verdadera en \emph{todo} modelo/interpretación posible.
+
+    \item \textit{``Si una fórmula $\Phi$ es satisfacible, entonces su negación ($\neg\Phi$) debe
+    ser insatisfacible.''}\\
+    \textbf{Falso.} Satisfacibilidad de $\Phi$ solo significa que $\Phi$ es verdadera en \emph{al
+    menos un} modelo; nada impide que también exista otro modelo donde $\Phi$ (y por lo tanto
+    $\neg\Phi$) sea verdadera.\\
+    \textbf{Contraejemplo:} $\Phi = P(x)$. Es satisfacible (verdadera en una interpretación donde
+    $P$ es siempre verdadero). Pero $\neg\Phi = \neg P(x)$ también es satisfacible (verdadera en una
+    interpretación donde $P$ es siempre falso): no es insatisfacible.\\
+    \textbf{Corrección:} Solo si $\Phi$ es \textbf{válida} se garantiza que $\neg\Phi$ es
+    insatisfacible.
+
+    \item \textit{``La sentencia $\forall x\, P(x) \to \exists x\, P(x)$ es válida en LPO, siempre
+    que el dominio sea no vacío.''}\\
+    \textbf{Verdadero.} Si el dominio no es vacío, existe al menos un objeto $d$; si $\forall x\,
+    P(x)$ es verdadera, en particular $P(d)$ es verdadera, lo cual basta para que $\exists x\, P(x)$
+    sea verdadera. (Precisamente por esto LPO exige dominios no vacíos: con dominio vacío,
+    $\forall x\, P(x)$ sería vacuamente verdadera mientras que $\exists x\, P(x)$ sería falsa, y la
+    implicación fallaría.)
+
+    \item \textit{``Las fórmulas $\forall x\, \exists y\, R(x,y)$ y $\exists y\, \forall x\, R(x,y)$
+    son lógicamente equivalentes.''}\\
+    \textbf{Falso.} Solo se cumple una dirección: $\exists y\,\forall x\,R(x,y) \models \forall x\,
+    \exists y\,R(x,y)$ (si hay un $y$ que sirve para todo $x$, ese mismo $y$ sirve como testigo para
+    cada $x$ por separado), pero no la recíproca.\\
+    \textbf{Contraejemplo:} Dominio = enteros, $R(x,y) \equiv$ ``$x<y$''. $\forall x\,\exists y\,
+    (x<y)$ es verdadera (para todo entero siempre hay uno mayor). Pero $\exists y\,\forall x\,(x<y)$
+    es falsa (ningún entero es mayor que \emph{todos} los enteros).
+
+    \item \textit{``La fórmula $\forall x(\Phi \lor \Psi)$ es lógicamente equivalente a
+    $(\forall x\,\Phi \lor \forall x\,\Psi)$ para cualesquiera $\Phi$ y $\Psi$.''}\\
+    \textbf{Falso.} Solo se cumple una dirección: $(\forall x\,\Phi \lor \forall x\,\Psi) \models
+    \forall x(\Phi\lor\Psi)$, pero no la recíproca (a diferencia de $\land$, que sí distribuye en
+    ambas direcciones sobre $\forall$).\\
+    \textbf{Contraejemplo:} Dominio $=\{1,2\}$, $\Phi(x)=$ ``$x$ es impar'' (verdadero solo para
+    $x{=}1$), $\Psi(x)=$ ``$x$ es par'' (verdadero solo para $x{=}2$). $\forall x(\Phi\lor\Psi)$ es
+    verdadera (todo elemento es par o impar), pero $\forall x\,\Phi$ es falsa (falla en $x{=}2$) y
+    $\forall x\,\Psi$ es falsa (falla en $x{=}1$), así que $\forall x\,\Phi \lor \forall x\,\Psi$ es
+    falsa.
+\end{enumerate}
+
+\subsection{Bloque 2: Traducción — Español a Lógica de Primer Orden}
+
+Vocabulario dado: $Ocupacion(p,o)$, $Cliente(p_1,p_2)$ (``$p_1$ es cliente de $p_2$''),
+$Jefe(p_1,p_2)$, constantes de ocupación $Medico, Cirujano, Abogado, Actor, Mecanico$, constantes
+$Emily, Joe$, $Enfermero(p)$, $LeAgrada(p_1,p_2)$ (``a $p_1$ le agrada $p_2$'').
+
+\begin{enumerate}
+    \item \textbf{``Emily es cirujana o abogada.''}
+    \[
+        Ocupacion(Emily, Cirujano) \lor Ocupacion(Emily, Abogado)
+    \]
+
+    \item \textbf{``Joe es actor, pero también ejerce otra ocupación.''}
+    \[
+        Ocupacion(Joe, Actor) \land \exists o\, \big(Ocupacion(Joe, o) \land o \neq Actor\big)
+    \]
+    \textbf{Justificación:} ``otra'' ocupación requiere afirmar la \emph{existencia} de una ocupación
+    distinta de $Actor$; por eso el cuantificador existencial se combina con $\land$ (existe un
+    objeto que cumple ser ocupación de Joe \textbf{y} ser distinto de Actor), y se necesita
+    explícitamente la desigualdad $o\neq Actor$, si no la misma ocupación $Actor$ satisfaría
+    trivialmente el existencial.
+
+    \item \textbf{``Todos los cirujanos son médicos.''}
+    \[
+        \forall p\, \big(Ocupacion(p,Cirujano) \Rightarrow Ocupacion(p,Medico)\big)
+    \]
+    \textbf{Justificación:} Enunciado universal sobre una categoría $\Rightarrow$ se usa
+    $\forall$ con $\Rightarrow$, tal como sugiere el consejo de la guía.
+
+    \item \textbf{``Existe un abogado todos cuyos clientes son médicos.''}
+    \[
+        \exists p_1\, \Big(Ocupacion(p_1,Abogado) \land \forall p_2\,\big(Cliente(p_2,p_1)
+        \Rightarrow Ocupacion(p_2,Medico)\big)\Big)
+    \]
+    \textbf{Justificación:} El cuantificador principal es existencial (``existe un abogado''), así
+    que se combina con $\land$ para afirmar sus dos propiedades (ser abogado, y la condición sobre
+    sus clientes). Dentro, ``todos sus clientes'' es un $\forall$ interno con $\Rightarrow$. Nótese
+    el orden de argumentos: $Cliente(p_2,p_1)$ significa ``$p_2$ es cliente de $p_1$'', que es lo que
+    se necesita (clientes \emph{del abogado} $p_1$).
+
+    \item \textbf{``Algún mecánico les agrada a todos los enfermeros.''}
+    \[
+        \exists p_1\, \Big(Ocupacion(p_1,Mecanico) \land \forall p_2\,\big(Enfermero(p_2)
+        \Rightarrow LeAgrada(p_2,p_1)\big)\Big)
+    \]
+    \textbf{Justificación:} De nuevo $\exists$ con $\land$ para el mecánico, y $\forall$ con
+    $\Rightarrow$ para "todos los enfermeros". Cuidado con el orden de $LeAgrada$: como
+    $LeAgrada(p_1,p_2)$ significa ``a $p_1$ le agrada $p_2$'', y se quiere decir que \emph{a los
+    enfermeros les agrada el mecánico}, se escribe $LeAgrada(p_2, p_1)$ (enfermero, mecánico), no al
+    revés.
+\end{enumerate}
+
+\subsection{Bloque 3: LPO a Español y Análisis de Validez}
+
+\paragraph{Parte A --- Traducción al español}
+
+\begin{enumerate}
+    \item $\forall x,y,l\ HablaIdioma(x,l)\land HablaIdioma(y,l) \Rightarrow Entiende(x,y)\land
+    Entiende(y,x)$\\
+    \textbf{Español:} ``Si dos personas hablan el mismo idioma, entonces se entienden mutuamente
+    (cada una entiende a la otra).''
+
+    \item $\exists y\, \forall x\, Entiende(x,y)$\\
+    \textbf{Español:} ``Existe una persona a quien todo el mundo entiende.''
+
+    \item $\forall x\, \exists y\, \big(Amigos(x,y) \land \forall z\,(Amigos(x,z) \to Entiende(z,y))\big)$\\
+    \textbf{Español:} ``Toda persona tiene un amigo tal que \emph{todos} los amigos de esa persona
+    entienden a ese amigo en particular.''
+\end{enumerate}
+
+\paragraph{Parte B --- Validez, satisfacibilidad, insatisfacibilidad}
+
+\begin{enumerate}
+    \item[4.] $(\exists x\; x{=}x) \Rightarrow (\forall y\, \exists z\; z\neq y)$\\
+    \textbf{Clasificación:} Satisfacible, pero no válida (contingente).\\
+    \textbf{Justificación:} El antecedente $\exists x\; x{=}x$ es verdadero en \emph{todo} modelo
+    (por reflexividad de la igualdad, y porque los dominios en LPO siempre son no vacíos), así que la
+    verdad de la implicación depende enteramente del consecuente $\forall y\,\exists z\; z\neq y$
+    (``todo elemento tiene otro distinto de él''), que es verdadero en cualquier dominio con
+    \textbf{2 o más} elementos, pero \textbf{falso} en un dominio de un solo elemento
+    $D=\{a\}$ (para $y=a$ no existe ningún $z\in D$ con $z\neq a$).\\
+    Con $|D|\geq 2$: antecedente $T$, consecuente $T$ $\Rightarrow$ implicación $T$ (satisfacible).\\
+    Con $|D|=1$: antecedente $T$, consecuente $F$ $\Rightarrow$ implicación $F$ (no válida).
+
+    \item[5.] $\forall x\, \big(P(x) \lor \neg P(x)\big)$\\
+    \textbf{Clasificación:} \textbf{Válida.}\\
+    \textbf{Justificación:} Para cualquier interpretación de $P$ y cualquier objeto del dominio,
+    $P(x)\lor\neg P(x)$ es una instancia del principio del tercero excluido, verdadera sin importar
+    el valor de verdad de $P(x)$. Al ser verdadera para todo $x$ en todo modelo, la sentencia
+    universal también lo es.
+
+    \item[6.] $\forall x\,(P(x)\land Q(x)) \leftrightarrow \big(\forall x\,P(x) \land \forall x\,Q(x)\big)$\\
+    \textbf{Clasificación:} \textbf{Válida.}\\
+    \textbf{Justificación:} A diferencia de $\lor$/$\exists$, el cuantificador universal
+    \textbf{sí distribuye completamente} sobre $\land$ en ambas direcciones: ``todo objeto cumple $P$
+    y $Q$'' equivale exactamente a ``todo objeto cumple $P$'' \textbf{y} ``todo objeto cumple $Q$'',
+    para cualquier interpretación de $P,Q$ y cualquier dominio — no existe contraejemplo posible.
+
+    \item[7.] $\forall x\,(P(x)\lor Q(x)) \leftrightarrow \big(\forall x\,P(x) \lor \forall x\,Q(x)\big)$\\
+    \textbf{Clasificación:} Satisfacible, pero no válida (contingente).\\
+    \textbf{Justificación:} Solo la dirección $\big(\forall x\,P(x)\lor\forall x\,Q(x)\big) \models
+    \forall x(P(x)\lor Q(x))$ es válida en general; la recíproca falla.\\
+    \textbf{Contraejemplo (para mostrar que no es válida):} Dominio $\{1,2\}$, $P(x)=$``$x$ impar'',
+    $Q(x)=$``$x$ par''. $\forall x(P\lor Q)$ es verdadero, pero $\forall x\,P$ y $\forall x\,Q$ son
+    ambos falsos, así que el lado derecho es falso: el bicondicional es falso en este modelo (no es
+    válida).\\
+    \textbf{Modelo donde es verdadera (para mostrar que es satisfacible, no insatisfacible):}
+    Cualquier interpretación donde $P(x)$ sea verdadero para todo $x$ (p. ej. $P(x)\equiv(x{=}x)$):
+    ambos lados del bicondicional son verdaderos, así que el bicondicional completo es verdadero.
+\end{enumerate}
+
+\subsection{Bloque 4: Construcción de Base de Conocimiento — Dominio de Parentesco}
+
+Predicados base: $Padre(p,q)$ (``$p$ es progenitor de $q$''), $Hombre(p)$, $Mujer(p)$,
+$Casado(p,q)$.
+
+\paragraph{Parte A --- Axiomas}
+
+\begin{enumerate}
+    \item \textbf{Madre}$(m,h)$: $m$ es la madre de $h$.
+    \[
+        Madre(m,h) \Leftrightarrow Padre(m,h) \land Mujer(m)
+    \]
+
+    \item \textbf{PadreBio}$(f,h)$: $f$ es el padre biológico de $h$.
+    \[
+        PadreBio(f,h) \Leftrightarrow Padre(f,h) \land Hombre(f)
+    \]
+
+    \item \textbf{Hermano}$(x,y)$: $x$ e $y$ son hermanos (comparten al menos un progenitor, $x\neq
+    y$).
+    \[
+        Hermano(x,y) \Leftrightarrow x\neq y \land \exists p\, \big(Padre(p,x) \land Padre(p,y)\big)
+    \]
+
+    \item \textbf{Abuelo}$(g,h)$: $g$ es abuelo o abuela de $h$.
+    \[
+        Abuelo(g,h) \Leftrightarrow \exists p\, \big(Padre(g,p) \land Padre(p,h)\big)
+    \]
+
+    \item \textbf{Abuela}$(g,h)$: $g$ es abuela de $h$.
+    \[
+        Abuela(g,h) \Leftrightarrow Abuelo(g,h) \land Mujer(g)
+    \]
+\end{enumerate}
+
+\paragraph{Parte B --- Hechos del árbol genealógico}
+
+\begin{align*}
+    &Casado(Jorge,Mama)\\
+    &Padre(Jorge,Isabel),\ Padre(Jorge,Margarita),\ Padre(Mama,Isabel),\ Padre(Mama,Margarita)\\
+    &Padre(Isabel,Carlos),\ Padre(Isabel,Ana),\ Padre(Isabel,Andres),\ Padre(Isabel,Eduardo)\\
+    &Padre(Felipe,Carlos),\ Padre(Felipe,Ana),\ Padre(Felipe,Andres),\ Padre(Felipe,Eduardo)\\
+    &Padre(Carlos,Guillermo),\ Padre(Carlos,Enrique),\ Padre(Diana,Guillermo),\ Padre(Diana,Enrique)\\
+    &Padre(Ana,Pedro),\ Padre(Ana,Zara),\ Padre(Marcos,Pedro),\ Padre(Marcos,Zara)\\[4pt]
+    &Hombre(Jorge),\ Hombre(Felipe),\ Hombre(Carlos),\ Hombre(Marcos),\ Hombre(Andres),\\
+    &Hombre(Eduardo),\ Hombre(Guillermo),\ Hombre(Enrique),\ Hombre(Pedro)\\[4pt]
+    &Mujer(Mama),\ Mujer(Isabel),\ Mujer(Margarita),\ Mujer(Diana),\ Mujer(Ana),\ Mujer(Zara)
+\end{align*}
+\textit{Nota:} Solo se codifica $Casado(Jorge,Mama)$ porque es el único matrimonio que el enunciado
+afirma explícitamente; no se asumen matrimonios no declarados (p. ej. Isabel--Felipe).
+
+\paragraph{Parte C --- Consultas}
+
+\begin{enumerate}
+    \item \textbf{¿Quiénes son los nietos de Isabel?}\\
+    Se instancia el axioma $Abuelo(g,h) \Leftrightarrow \exists p(Padre(g,p)\land Padre(p,h))$ con
+    $g=Isabel$. Los hijos de Isabel son $\{Carlos, Ana, Andres, Eduardo\}$ (progenitor directo); se
+    revisa cuáles de ellos tienen hijos propios en la KB:
+    \begin{itemize}
+        \item $Padre(Isabel,Carlos) \land Padre(Carlos,Guillermo) \Rightarrow Abuelo(Isabel,Guillermo)$
+        \item $Padre(Isabel,Carlos) \land Padre(Carlos,Enrique) \Rightarrow Abuelo(Isabel,Enrique)$
+        \item $Padre(Isabel,Ana) \land Padre(Ana,Pedro) \Rightarrow Abuelo(Isabel,Pedro)$
+        \item $Padre(Isabel,Ana) \land Padre(Ana,Zara) \Rightarrow Abuelo(Isabel,Zara)$
+        \item $Andres$ y $Eduardo$ no tienen hijos registrados en la KB, así que no aportan nietos.
+    \end{itemize}
+    \textbf{Respuesta:} Los nietos de Isabel son \textbf{Guillermo, Enrique, Pedro y Zara}.
+
+    \item \textbf{¿Son Guillermo y Zara hermanos?}\\
+    Se evalúa $Hermano(Guillermo,Zara) \Leftrightarrow Guillermo\neq Zara \land \exists p
+    (Padre(p,Guillermo)\land Padre(p,Zara))$.\\
+    Progenitores de Guillermo: $\{Carlos, Diana\}$. Progenitores de Zara: $\{Ana, Marcos\}$.
+    La intersección $\{Carlos,Diana\}\cap\{Ana,Marcos\} = \varnothing$: no existe ningún $p$ que sea
+    progenitor de ambos.\\
+    \textbf{Respuesta:} \textbf{No son hermanos}; el existencial del axioma de Hermano queda
+    insatisfecho, así que $Hermano(Guillermo,Zara)$ es falso. (De hecho son \textbf{primos}: sus
+    respectivos padres, Carlos y Ana, sí son hermanos entre sí, pues ambos son hijos de Isabel y
+    Felipe.)
+\end{enumerate}
+
+\subsection{Bloque 5: Unificación y Demostración por Resolución}
+
+\paragraph{Parte A --- Unificación}
+
+\begin{enumerate}
+    \item $P(A,B,B)$ y $P(x,y,z)$.\\
+    Posición a posición: $x/A$, $y/B$, $z/B$.\\
+    \textbf{UMG:} $\theta = \{x/A,\ y/B,\ z/B\}$.
+
+    \item $Q(y, G(A,B))$ y $Q(G(x,x), y)$.\\
+    Posición 1: $y$ vs. $G(x,x)$ $\Rightarrow$ $\theta_1=\{y/G(x,x)\}$ (verificación de ocurrencia
+    OK: $y$ no aparece dentro de $G(x,x)$).\\
+    Posición 2 (aplicando $\theta_1$ a ambos términos): $G(A,B)$ vs. $G(x,x)$ $\Rightarrow$ se debe
+    unificar $A$ con $x$ (da $x/A$) \textbf{y}, en la segunda posición de $G$, $B$ con $x$ (ya
+    sustituido por $A$), es decir $B$ vs. $A$. Como $A$ y $B$ son constantes \emph{distintas}, esta
+    comparación falla.\\
+    \textbf{Respuesta:} \textbf{No se pueden unificar.} El intento exige simultáneamente $x/A$ y
+    $x/B$, lo cual es imposible porque $A\neq B$ (una variable no puede ligarse a dos constantes
+    distintas a la vez).
+
+    \item $LeAgrada(x,y)$ y $LeAgrada(Joe,z)$.\\
+    Posición 1: $x$ vs. $Joe$ $\Rightarrow x/Joe$.\\
+    Posición 2: $y$ vs. $z$ (ambas variables) $\Rightarrow y/z$.\\
+    \textbf{UMG:} $\theta = \{x/Joe,\ y/z\}$ (se deja $y$ ligada a la variable $z$, no a una
+    constante, para mantener el unificador lo más general posible).
+
+    \item $Progenitor(Padre(x),x)$ y $Progenitor(Padre(Juan),Juan)$.\\
+    Posición 1: $Padre(x)$ vs. $Padre(Juan)$ $\Rightarrow$ se unifican los argumentos internos:
+    $x$ vs. $Juan$ $\Rightarrow x/Juan$.\\
+    Posición 2 (aplicando $x/Juan$): $x$ vs. $Juan \Rightarrow Juan$ vs. $Juan$: coincide, sin
+    generar nueva ligadura.\\
+    \textbf{UMG:} $\theta = \{x/Juan\}$.
+\end{enumerate}
+
+\paragraph{Parte B --- Conversión a FNC}
+
+\begin{enumerate}
+    \item[5.] $\forall x\,(Caballo(x) \Rightarrow Animal(x))$\\
+    \textbf{Paso a paso:}
+    \begin{align*}
+        \forall x\,(Caballo(x)\Rightarrow Animal(x)) &\equiv \forall x\,(\neg Caballo(x)\lor
+        Animal(x)) &&\text{(eliminar }\Rightarrow\text{)}
+    \end{align*}
+    No hay $\exists$ que skolemizar. Se elimina el cuantificador universal (queda implícito sobre
+    todas las variables libres de la cláusula) y ya es una disyunción de literales.\\
+    \textbf{FNC:} $\neg Caballo(x) \lor Animal(x)$
+
+    \item[6.] $\forall h\, \big((\exists y\,(CabezaDe(h,y)\land Caballo(y))) \Rightarrow (\exists
+    z\,(CabezaDe(h,z)\land Animal(z)))\big)$\\
+    \textbf{Paso 1 (eliminar} $\Rightarrow$\textbf{):}
+    \[
+        \forall h\, \Big(\neg\big(\exists y\,(CabezaDe(h,y)\land Caballo(y))\big) \lor
+        \exists z\,(CabezaDe(h,z)\land Animal(z))\Big)
+    \]
+    \textbf{Paso 2 (mover} $\neg$ \textbf{hacia adentro; } $\neg\exists y\,\Phi \equiv \forall
+    y\,\neg\Phi$\textbf{, De Morgan):}
+    \[
+        \forall h\, \Big(\forall y\, \big(\neg CabezaDe(h,y)\lor\neg Caballo(y)\big) \lor
+        \exists z\,(CabezaDe(h,z)\land Animal(z))\Big)
+    \]
+    \textbf{Paso 3 (estandarizar variables):} $h,y,z$ ya son distintas, no hace falta renombrar.\\
+    \textbf{Paso 4 (Skolemización):} El $\exists z$ está dentro del alcance de $\forall h$
+    únicamente (no dentro de $\forall y$, que solo gobierna el primer disyunto), así que se reemplaza
+    $z$ por una \textbf{función de Skolem de $h$}: $z \to S(h)$.
+    \[
+        \forall h\,\forall y\, \Big(\big(\neg CabezaDe(h,y)\lor\neg Caballo(y)\big) \lor
+        \big(CabezaDe(h,S(h))\land Animal(S(h))\big)\Big)
+    \]
+    \textbf{Paso 5 (eliminar cuantificadores universales, quedan implícitos):}
+    \[
+        \big(\neg CabezaDe(h,y)\lor\neg Caballo(y)\big) \lor \big(CabezaDe(h,S(h))\land Animal(S(h))\big)
+    \]
+    \textbf{Paso 6 (distribuir $\lor$ sobre $\land$):} con $A_1=\neg CabezaDe(h,y)$,
+    $A_2=\neg Caballo(y)$, $B_1=CabezaDe(h,S(h))$, $B_2=Animal(S(h))$:
+    \[
+        (A_1\lor A_2\lor B_1) \land (A_1\lor A_2\lor B_2)
+    \]
+    \textbf{FNC (dos cláusulas):}
+    \begin{align*}
+        &\neg CabezaDe(h,y) \lor \neg Caballo(y) \lor CabezaDe(h,S(h)) \tag{C-A}\\
+        &\neg CabezaDe(h,y) \lor \neg Caballo(y) \lor Animal(S(h)) \tag{C-B}
+    \end{align*}
+\end{enumerate}
+
+\paragraph{Parte C --- Refutación por Resolución}
+
+\textbf{Objetivo:} demostrar que la premisa 5 (``todo caballo es un animal'') implica la afirmación 6
+(``la cabeza de un caballo es la cabeza de un animal''), por refutación: se asume la
+\textbf{negación} de la conclusión (sentencia 6), se convierte a FNC, y se resuelve junto con la
+premisa (sentencia 5) hasta obtener $\bot$.
+
+\textbf{Paso 1 --- Cláusula de la premisa (de la Parte B, ítem 5):}
+\[
+    C_1:\quad \neg Caballo(x) \lor Animal(x)
+\]
+
+\textbf{Paso 2 --- Negar la conclusión (sentencia 6) y convertirla a FNC:}
+\begin{align*}
+    \neg\Big[\forall h\big(\exists y(CabezaDe(h,y)\land Caballo(y)) \Rightarrow \exists z
+    (CabezaDe(h,z)\land Animal(z))\big)\Big]
+    &\equiv \exists h\, \Big[\exists y(CabezaDe(h,y)\land Caballo(y)) \land \\
+    &\qquad\quad \neg\exists z(CabezaDe(h,z)\land Animal(z))\Big]\\
+    &\equiv \exists h\,\exists y\, \Big[CabezaDe(h,y)\land Caballo(y) \land \\
+    &\qquad\quad \forall z\,\big(\neg CabezaDe(h,z)\lor\neg Animal(z)\big)\Big]
+\end{align*}
+Los cuantificadores $\exists h$ y $\exists y$ son los \textbf{más externos} (no están dentro de
+ningún $\forall$), así que se Skolemizan con \textbf{constantes} nuevas $H$ (una cabeza concreta) y
+$Y$ (un caballo concreto): $h\to H,\ y\to Y$. El $\forall z$ se elimina (queda implícito) y la
+conjunción se separa en cláusulas:
+\begin{align*}
+    C_2&:\quad CabezaDe(H,Y)\\
+    C_3&:\quad Caballo(Y)\\
+    C_4&:\quad \neg CabezaDe(H,z) \lor \neg Animal(z)
+\end{align*}
+
+\textbf{Paso 3 --- Conjunto de cláusulas para la refutación:} $\{C_1, C_2, C_3, C_4\}$.
+
+\textbf{Paso de resolución 1:} Resolver $C_1$ ($\neg Caballo(x)\lor Animal(x)$) con $C_3$
+($Caballo(Y)$), unificador $\theta=\{x/Y\}$, sobre el par $Caballo(Y)/\neg Caballo(x)$
+$\Rightarrow$ se deriva $C_5$: $Animal(Y)$.
+
+\textbf{Paso de resolución 2:} Resolver $C_4$ ($\neg CabezaDe(H,z)\lor\neg Animal(z)$) con $C_2$
+($CabezaDe(H,Y)$), unificador $\theta=\{z/Y\}$, sobre el par $CabezaDe(H,Y)/\neg CabezaDe(H,z)$
+$\Rightarrow$ se deriva $C_6$: $\neg Animal(Y)$.
+
+\textbf{Paso de resolución 3:} Resolver $C_5$ ($Animal(Y)$) con $C_6$ ($\neg Animal(Y)$), sin
+unificador adicional (ambos ya están en términos de la constante $Y$) $\Rightarrow$ se deriva la
+\textbf{cláusula vacía} $\bot$.
+
+\textbf{Conclusión:} Se derivó $\bot$ a partir de $\{$premisa, $\neg$conclusión$\}$, por lo tanto ese
+conjunto es insatisfacible. Por refutación, esto confirma que la premisa \textbf{implica} la
+conclusión: la cabeza de un caballo es, en efecto, la cabeza de un animal.
+
+\paragraph{Parte D --- Reflexión}
+
+\begin{enumerate}
+    \item[7.] \textbf{¿Por qué la resolución funciona por contradicción?}\\
+    Para demostrar $BC \models \alpha$ semánticamente habría que revisar \emph{todo} modelo de $BC$ y
+    confirmar que $\alpha$ es verdadera en cada uno — inviable en general en LPO (dominios
+    infinitos). La refutación invierte el problema: asume $\neg\alpha$ y pregunta si $BC\land
+    \neg\alpha$ tiene \emph{algún} modelo. Si se logra derivar $\bot$ (la cláusula vacía,
+    sintácticamente insatisfacible), entonces $BC\land\neg\alpha$ no tiene ningún modelo, es decir,
+    en \textbf{ningún} modelo pueden ser simultáneamente verdaderas $BC$ y $\neg\alpha$. Eso equivale
+    exactamente a decir que en todo modelo donde $BC$ es verdadera, $\alpha$ también lo es —la
+    definición misma de $BC\models\alpha$. La resolución convierte así una pregunta sobre
+    \emph{todos los modelos} (semántica) en una búsqueda de una prueba sintáctica finita de
+    inconsistencia, lo cual es mecánicamente verificable.
+
+    \item[8.] \textbf{¿Por qué la resolución en LPO es solo semi-decidible?}\\
+    En lógica proposicional el número de símbolos es finito, así que hay exactamente $2^n$ modelos
+    posibles: TT-Implica? siempre termina (decidible). En LPO los dominios de cuantificación pueden
+    ser infinitos, y la resolución con unificación puede necesitar instanciar variables universales
+    de infinitas maneras distintas, generando una secuencia potencialmente infinita de cláusulas
+    nuevas. El \textbf{teorema de completitud} garantiza que si $BC\models\alpha$, la resolución
+    \emph{sí} encontrará $\bot$ en un número \textbf{finito} de pasos, tarde o temprano. Pero si
+    $BC\not\models\alpha$, no existe garantía de terminación: el algoritmo puede seguir generando
+    cláusulas para siempre sin nunca confirmar que $\alpha$ \emph{no} se sigue. Por eso el
+    procedimiento es \textbf{semi-decidible}: puede confirmar un ``sí'' en tiempo finito siempre que
+    la respuesta sea sí, pero no puede garantizar confirmar un ``no'' en tiempo finito.
+\end{enumerate}

@@ -1,0 +1,615 @@
+% Clase 5 — Ejercicios resueltos: Guía de Agentes Lógicos (completa)
+\section{Ejercicios: Guía de Agentes Lógicos (con solución paso a paso)}
+
+Esta sección resuelve, de principio a fin, la \textit{Guía de Ejercicios: Agentes Lógicos}. Cada
+respuesta se justifica explícitamente; en los casos falsos se da la versión corregida, y en los
+casos de tablas de verdad o resolución se muestra cada paso.
+
+\subsection{Bloque 1: Conceptos Fundamentales de Agentes Lógicos}
+
+\paragraph{Parte A --- Consecuencia Lógica y Modelos}
+
+\begin{enumerate}
+    \item \textit{``Una base de conocimiento KB implica lógicamente una sentencia $\alpha$ (escrito
+    $KB \models \alpha$) si y solo si $\alpha$ es verdadera en todo modelo en el que KB es
+    verdadera.''}\\
+    \textbf{Verdadero.} Es exactamente la definición semántica de consecuencia lógica: un modelo de
+    KB es una interpretación donde toda sentencia de KB es verdadera, y $KB \models \alpha$ exige que
+    $\alpha$ también lo sea en \emph{todos} esos modelos.
+
+    \item \textit{``Si $KB \models \alpha$, entonces $\alpha$ debe ser verdadera en todos los mundos
+    posibles, sin importar lo que diga KB.''}\\
+    \textbf{Falso.} $\alpha$ solo tiene que ser verdadera en los modelos donde \emph{KB también es
+    verdadera}; en los modelos donde KB es falsa, $\alpha$ puede ser falsa sin violar $KB \models
+    \alpha$.\\
+    \textbf{Corrección:} Si $KB \models \alpha$, entonces $\alpha$ es verdadera en todo modelo en el
+    que KB es verdadera (no en todo modelo posible sin restricción).
+
+    \item \textit{``Una sentencia es válida (tautología) si es verdadera en algunos los modelos
+    posibles.''}\\
+    \textbf{Falso.} Eso describe \emph{satisfacibilidad}, no validez.\\
+    \textbf{Corrección:} Una sentencia es válida (tautología) si es verdadera en \textbf{todos} los
+    modelos posibles.
+
+    \item \textit{``Una sentencia es satisfacible si existe al menos un modelo en el que es
+    verdadera.''}\\
+    \textbf{Verdadero.} Es la definición estándar de satisfacibilidad.
+
+    \item \textit{``Si una sentencia es insatisfacible, entonces su negación es satisficible.''}\\
+    \textbf{Verdadero.} Si $\alpha$ es insatisfacible, es falsa en todo modelo, por lo tanto $\neg
+    \alpha$ es verdadera en todo modelo (es decir, $\neg\alpha$ es válida). Toda sentencia válida es,
+    en particular, satisfacible (verdadera en al menos un modelo: todos ellos).
+\end{enumerate}
+
+\paragraph{Parte B --- Algoritmos de Inferencia y Verificación de Modelos}
+
+\begin{enumerate}
+    \item \textit{``El algoritmo TT-Implica? enumera todos los modelos posibles para verificar si
+    $KB \models \alpha$, siendo correcto y completo pero exponencial en el número de símbolos.''}\\
+    \textbf{Verdadero.} Con $n$ símbolos proposicionales hay $2^n$ asignaciones de verdad posibles;
+    TT-Implica? las recorre todas, por lo que es $\bigO{2^n}$, pero al ser una enumeración exhaustiva
+    es correcto (sound) y completo.
+
+    \item \textit{``Un procedimiento de prueba es correcto (sound) si sólo deriva sentencias que son
+    consecuencia lógica de KB.''}\\
+    \textbf{Verdadero.} Esa es la definición de \textit{soundness}: nunca deriva una sentencia falsa
+    a partir de premisas verdaderas. (La \textit{completitud} es la propiedad complementaria: deriva
+    \emph{todas} las sentencias que son consecuencia lógica.)
+
+    \item \textit{``Modus Ponens establece: si $\alpha \Rightarrow \beta$ está en KB, y $\beta$ es
+    verdadera, entonces podemos inferir $\alpha$.''}\\
+    \textbf{Falso.} Esto es la falacia de \textit{afirmar el consecuente}, una regla inválida.\\
+    \textbf{Corrección:} Modus Ponens establece que si $\alpha \Rightarrow \beta$ está en KB y
+    $\alpha$ es verdadera, entonces podemos inferir $\beta$.
+
+    \item \textit{``La regla de resolución establece que de las cláusulas $(\ell_1 \lor \cdots \lor
+    \ell_k \lor m)$ y $(\neg m \lor n_1 \lor \cdots \lor n_j)$ se puede derivar $(\ell_1 \lor \cdots
+    \lor \ell_k \lor n_1 \lor \cdots \lor n_j)$.''}\\
+    \textbf{Verdadero.} Es exactamente la regla de resolución binaria: se cancela el par
+    complementario $m / \neg m$ y se unen el resto de los literales de ambas cláusulas.
+
+    \item \textit{``El algoritmo DPLL es una mejora sobre la enumeración básica de tablas de verdad
+    para verificar satisfacibilidad.''}\\
+    \textbf{Verdadero.} DPLL añade propagación de cláusulas unitarias, eliminación de literales puros
+    y poda temprana (\textit{early termination}) sobre el backtracking de fuerza bruta, evitando
+    explorar ramas completas del árbol de asignaciones cuando ya se sabe que fallarán.
+
+    \item \textit{``El encadenamiento hacia adelante está orientado a metas: trabaja hacia atrás
+    desde una consulta para determinar si KB la soporta.''}\\
+    \textbf{Falso.} Esa descripción corresponde al encadenamiento \textbf{hacia atrás}.\\
+    \textbf{Corrección:} El encadenamiento hacia adelante está orientado a \textbf{datos}: parte de
+    los hechos conocidos en KB y dispara reglas repetidamente hasta derivar la consulta (o hasta que
+    no se puedan agregar más hechos).
+\end{enumerate}
+
+\paragraph{Parte C --- Reglas de Inferencia}
+
+\begin{enumerate}
+    \item De $(P \Rightarrow Q)$ y $P$, concluir $Q$.\\
+    \textbf{Nombre:} Modus Ponens. \quad \textbf{Válida:} Sí. Si $P\Rightarrow Q$ es verdadera y $P$
+    es verdadera, la única fila de la tabla de verdad compatible con $P\Rightarrow Q$ verdadera y $P$
+    verdadera tiene $Q$ verdadera.
+
+    \item De $(P \Rightarrow Q)$ y $\neg Q$, concluir $\neg P$.\\
+    \textbf{Nombre:} Modus Tollens. \quad \textbf{Válida:} Sí. Si $P$ fuera verdadera, $P\Rightarrow
+    Q$ obligaría a $Q$ verdadera, contradiciendo $\neg Q$; por lo tanto $P$ debe ser falsa.
+
+    \item De $P$ y $Q$, concluir $(P \land Q)$.\\
+    \textbf{Nombre:} Introducción de la conjunción (And-Introduction). \quad \textbf{Válida:} Sí, por
+    definición de $\land$.
+
+    \item De $(P \lor Q)$ y $\neg P$, concluir $Q$.\\
+    \textbf{Nombre:} Silogismo disyuntivo (resolución unitaria). \quad \textbf{Válida:} Sí. Como $P$
+    es falsa, para que $P\lor Q$ sea verdadera, $Q$ debe serlo.
+
+    \item De $(P \Rightarrow Q)$ y $(Q \Rightarrow R)$, concluir $(P \Rightarrow R)$.\\
+    \textbf{Nombre:} Silogismo hipotético (transitividad de la implicación). \quad \textbf{Válida:}
+    Sí (se demuestra formalmente en el Bloque 4, Problema 4.1.3, convirtiendo la sentencia a FNC).
+
+    \item De $(P \Rightarrow Q)$ y $\neg P$, concluir $\neg Q$.\\
+    \textbf{Nombre:} Negación del antecedente (falacia). \quad \textbf{Válida:} No, es \textbf{inválida}.
+    \textbf{Contraejemplo:} $P = F$, $Q = T$: $P\Rightarrow Q$ es verdadera y $\neg P$ es verdadera,
+    pero $\neg Q$ es falsa.
+\end{enumerate}
+
+\subsection{Bloque 2: Validez y Satisfacibilidad}
+
+\paragraph{Problema 2.1 --- Validez y Satisfacibilidad (Ej. 13, Cap. 7 AIMA)}
+
+\begin{enumerate}
+    \item $Humo \Rightarrow Humo$.\\
+    \begin{tabular}{cc}
+        \toprule
+        $Humo$ & $Humo\Rightarrow Humo$ \\
+        \midrule
+        T & T \\
+        F & T \\
+        \bottomrule
+    \end{tabular}\\
+    Todas las filas son verdaderas $\Rightarrow$ \textbf{Válida} (instancia del esquema $\alpha
+    \Rightarrow \alpha$, siempre tautológico).
+
+    \item $Humo \Rightarrow Fuego$.\\
+    \begin{tabular}{ccc}
+        \toprule
+        $Humo$ & $Fuego$ & $Humo\Rightarrow Fuego$ \\
+        \midrule
+        T & T & T \\
+        T & F & F \\
+        F & T & T \\
+        F & F & T \\
+        \bottomrule
+    \end{tabular}\\
+    Hay filas verdaderas y una falsa $\Rightarrow$ \textbf{Satisfacible, pero no válida} (contingente).
+
+    \item $(Humo \Rightarrow Fuego) \Rightarrow (\neg Humo \Rightarrow \neg Fuego)$.\\
+    \begin{tabular}{cccccc}
+        \toprule
+        $Humo$ & $Fuego$ & $H\Rightarrow F$ & $\neg H$ & $\neg F$ & $(H\Rightarrow F)\Rightarrow(\neg H\Rightarrow\neg F)$ \\
+        \midrule
+        T & T & T & F & F & T \\
+        T & F & F & F & T & T \\
+        F & T & T & T & F & \textbf{F} \\
+        F & F & T & T & T & T \\
+        \bottomrule
+    \end{tabular}\\
+    La fila $Humo=F, Fuego=T$ da Falso, y las demás dan Verdadero $\Rightarrow$
+    \textbf{Satisfacible, pero no válida} (contingente).
+
+    \item $Humo \lor Fuego \lor \neg Fuego$.\\
+    El subtérmino $Fuego \lor \neg Fuego$ ya es una tautología (verdadero sin importar el valor de
+    $Fuego$), así que toda la disyunción es verdadera en las 4 filas posibles de $(Humo,Fuego)$
+    $\Rightarrow$ \textbf{Válida}.
+
+    \item $((Humo \land Calor) \Rightarrow Fuego) \Leftrightarrow ((Humo \Rightarrow Fuego) \lor
+    (Calor \Rightarrow Fuego))$.\\
+    \begin{tabular}{ccccccccc}
+        \toprule
+        $H$ & $C$ & $Fu$ & $H\land C$ & $A=(H\land C)\Rightarrow Fu$ & $H\Rightarrow Fu$ & $C\Rightarrow Fu$ & $B$ (su OR) & $A\Leftrightarrow B$\\
+        \midrule
+        T&T&T&T&T&T&T&T&T\\
+        T&T&F&T&F&F&F&F&T\\
+        T&F&T&F&T&T&T&T&T\\
+        T&F&F&F&T&F&T&T&T\\
+        F&T&T&F&T&T&T&T&T\\
+        F&T&F&F&T&T&F&T&T\\
+        F&F&T&F&T&T&T&T&T\\
+        F&F&F&F&T&T&T&T&T\\
+        \bottomrule
+    \end{tabular}\\
+    Las 8 filas dan Verdadero $\Rightarrow$ \textbf{Válida}. (Se puede confirmar algebraicamente:
+    $(H\land C)\Rightarrow Fu \equiv \neg H \lor \neg C \lor Fu$, y $(H\Rightarrow Fu)\lor(C\Rightarrow
+    Fu) \equiv (\neg H\lor Fu)\lor(\neg C\lor Fu) \equiv \neg H\lor\neg C\lor Fu$: ambos lados son
+    \emph{idénticos}, por lo que el bicondicional es una tautología.)
+\end{enumerate}
+
+\paragraph{Problema 2.2 --- Verificación de Consecuencia Lógica}
+
+\begin{enumerate}
+    \item $A \Leftrightarrow B \models \neg A \lor B$?\\
+    \begin{tabular}{cccc}
+        \toprule
+        $A$ & $B$ & $A\Leftrightarrow B$ & $\neg A \lor B$ \\
+        \midrule
+        T & T & T & T \\
+        T & F & F & F \\
+        F & T & F & T \\
+        F & F & T & T \\
+        \bottomrule
+    \end{tabular}\\
+    En las dos filas donde $A\Leftrightarrow B$ es verdadera (fila 1 y fila 4), $\neg A \lor B$
+    también lo es. \textbf{Correcta.} Justificación algebraica: $A\Leftrightarrow B \equiv (A
+    \Rightarrow B)\land(B\Rightarrow A)$, y $A\Rightarrow B \equiv \neg A \lor B$; por lo tanto
+    $A\Leftrightarrow B$ implica cada uno de sus conjuntos, en particular $\neg A \lor B$.
+
+    \item $(A \lor B) \land (\neg C \lor \neg D \lor E) \models (A \lor B)$?\\
+    \textbf{Correcta}, y de forma trivial: cualquier modelo que satisface una conjunción $X \land Y$
+    satisface, en particular, cada conjunto por separado ($X$ e $Y$); aquí $X = (A\lor B)$. No hace
+    falta enumerar las $2^5=32$ filas: es una instancia directa de la regla de \textit{eliminación de
+    la conjunción} ($X \land Y \models X$), válida para cualquier $X, Y$.
+
+    \item $(A \lor B) \land (\neg C \lor \neg D \lor E) \models (A \lor B) \land (\neg D \lor E)$?\\
+    \textbf{No es correcta.} Contraejemplo: $A=T,\ B=F,\ C=F,\ D=T,\ E=F$.\\
+    Verificación paso a paso:
+    \begin{itemize}
+        \item $A \lor B = T \lor F = T$.
+        \item $\neg C \lor \neg D \lor E = \neg F \lor \neg T \lor F = T \lor F \lor F = T$.
+        \item Lado izquierdo (premisa) $= T \land T = T$: el modelo satisface la premisa.
+        \item $\neg D \lor E = \neg T \lor F = F \lor F = F$.
+        \item Lado derecho (conclusión) $= (A\lor B) \land (\neg D \lor E) = T \land F = F$.
+    \end{itemize}
+    La premisa es verdadera y la conclusión es falsa en este modelo, así que la premisa \textbf{no}
+    implica la conclusión. El error es que $\neg C \lor \neg D \lor E$ puede ser verdadera "gracias a"
+    $\neg C$ sin decir nada sobre $\neg D \lor E$.
+\end{enumerate}
+
+\subsection{Bloque 3: Modelamiento de Lenguaje Natural — El Problema de la Mansión Embrujada}
+
+\paragraph{Parte A --- Definición de Símbolos Proposicionales}
+
+Además de $F_{x,y}$, $T_{x,y}$, $Frio_{x,y}$ y $Crujido_{x,y}$ (dados en el enunciado), se necesitan
+símbolos para registrar el estado epistémico del robot:
+\begin{itemize}
+    \item $Segura_{x,y}$ = ``El robot ha \emph{probado} que la habitación $(x,y)$ es segura (no tiene
+    Fantasma ni Trampa)''.
+    \item $Visitada_{x,y}$ = ``El robot ya visitó la habitación $(x,y)$''.
+\end{itemize}
+
+\paragraph{Parte B --- Codificación de las Reglas}
+
+\begin{enumerate}
+    \item La entrada es segura:
+    \[
+        \neg F_{1,1} \land \neg T_{1,1}
+    \]
+
+    \item Frío en $(1,1)$ implica Fantasma en una adyacente:
+    \[
+        Frio_{1,1} \Leftrightarrow (F_{2,1} \lor F_{1,2})
+    \]
+
+    \item Crujido en $(1,1)$ implica Trampa en una adyacente:
+    \[
+        Crujido_{1,1} \Leftrightarrow (T_{2,1} \lor T_{1,2})
+    \]
+
+    \item Axioma de Frío para $(2,2)$, adyacente a $(1,2)$, $(3,2)$ y $(2,1)$:
+    \[
+        Frio_{2,2} \Leftrightarrow (F_{1,2} \lor F_{3,2} \lor F_{2,1})
+    \]
+
+    \item A lo sumo un Fantasma en toda la mansión (6 habitaciones: $(1,1)$ a $(3,2)$). Usando
+    implicaciones, se afirma que si una habitación tiene el Fantasma, \textbf{ninguna otra} lo tiene:
+    \[
+        \bigwedge_{(x,y) \neq (x',y')} \big(F_{x,y} \Rightarrow \neg F_{x',y'}\big)
+    \]
+    Por ejemplo, para $(1,1)$:
+    \[
+        F_{1,1} \Rightarrow (\neg F_{2,1} \land \neg F_{3,1} \land \neg F_{1,2} \land \neg F_{2,2}
+        \land \neg F_{3,2})
+    \]
+    y una implicación análoga se escribe partiendo de cada una de las otras 5 habitaciones (en total
+    $\binom{6}{2}=15$ pares de restricción, cada uno equivalente a la cláusula $\neg F_{x,y} \lor
+    \neg F_{x',y'}$).
+\end{enumerate}
+
+\paragraph{Parte C --- Razonamiento a partir de las Percepciones}
+
+Adyacencias en la cuadrícula $3\times2$: $(1,1)$--$(2,1)$--$(3,1)$ (fila inferior) y $(1,2)$--$(2,2)$--$(3,2)$
+(fila superior), con $(1,1)$--$(1,2)$, $(2,1)$--$(2,2)$ y $(3,1)$--$(3,2)$ uniendo las dos filas.
+
+\begin{enumerate}
+    \item \textbf{¿Puede el robot concluir que $(2,2)$ contiene una Trampa?}\\
+    \textbf{Razonamiento (paso a paso):}
+    \begin{enumerate}
+        \item En $(1,1)$ el robot percibe ``Sin Crujido''. Por el axioma de la Parte B, ítem 3,
+        $Crujido_{1,1} \Leftrightarrow (T_{2,1}\lor T_{1,2})$; como $Crujido_{1,1}$ es falso, se
+        concluye $\neg T_{2,1} \land \neg T_{1,2}$ (ni $(2,1)$ ni $(1,2)$ tienen Trampa). Junto con
+        $\neg F_{2,1}\land\neg F_{1,2}$ (del axioma de Frío) y la entrada segura, esto confirma que
+        $(2,1)$ y $(1,2)$ son seguras — de ahí que el robot pudiera moverse a ambas.
+        \item El axioma de Crujido para $(1,2)$ (adyacente a $(1,1)$ y $(2,2)$) es:
+        \[
+            Crujido_{1,2} \Leftrightarrow (T_{1,1} \lor T_{2,2})
+        \]
+        \item El robot percibe Crujido en $(1,2)$, luego $Crujido_{1,2}$ es verdadero, así que
+        $T_{1,1} \lor T_{2,2}$ es verdadero (Modus Ponens sobre el bicondicional).
+        \item Se sabe que $\neg T_{1,1}$ (la entrada es segura, Parte B ítem 1).
+        \item Por silogismo disyuntivo sobre $T_{1,1} \lor T_{2,2}$ y $\neg T_{1,1}$, se concluye
+        $T_{2,2}$.
+    \end{enumerate}
+    \textbf{Conclusión:} \textbf{Sí}, el robot puede concluir con certeza que hay una Trampa en
+    $(2,2)$.
+
+    \item \textbf{¿Puede el robot concluir que $(3,1)$ es segura para entrar?}\\
+    \textbf{Razonamiento (paso a paso):}
+    \begin{enumerate}
+        \item $(3,1)$ es adyacente a $(2,1)$ y $(3,2)$. El robot solo tiene percepciones en $(1,1)$,
+        $(2,1)$ y $(1,2)$; nunca ha estado en $(3,2)$, así que no hay información directa sobre esa
+        adyacencia.
+        \item En $(2,1)$ el robot solo percibió Crujido (no Frío). Por el axioma de Frío para
+        $(2,1)$: $Frio_{2,1} \Leftrightarrow (F_{1,1}\lor F_{3,1}\lor F_{2,2})$. Como $Frio_{2,1}$ es
+        falso, se concluye $\neg F_{1,1} \land \neg F_{3,1} \land \neg F_{2,2}$: en particular
+        $\neg F_{3,1}$ (no hay Fantasma en $(3,1)$).
+        \item Por el axioma de Crujido para $(2,1)$: $Crujido_{2,1} \Leftrightarrow (T_{1,1}\lor
+        T_{3,1}\lor T_{2,2})$. Como $Crujido_{2,1}$ es verdadero y $\neg T_{1,1}$ (entrada segura),
+        se obtiene $T_{3,1}\lor T_{2,2}$.
+        \item Del ítem anterior de este mismo bloque ya se sabe $T_{2,2}$ es verdadero. Esto por sí
+        solo \textbf{ya satisface} la disyunción $T_{3,1}\lor T_{2,2}$, sin necesidad de que $T_{3,1}$
+        sea verdadero. Es decir, la KB \emph{no fuerza} un valor de verdad para $T_{3,1}$: es
+        consistente tanto con $T_{3,1}=Verdadero$ como con $T_{3,1}=Falso$.
+    \end{enumerate}
+    \textbf{Conclusión:} \textbf{No.} Aunque se sabe que $(3,1)$ no tiene Fantasma ($\neg F_{3,1}$),
+    el estado de la Trampa en $(3,1)$ queda \textbf{indeterminado} (el Crujido percibido en $(2,1)$ ya
+    queda explicado por la Trampa en $(2,2)$). Como la seguridad exige certeza sobre \emph{ambos}
+    peligros, el robot no puede probar que $(3,1)$ sea segura y, según la regla del enunciado, no
+    puede entrar todavía.
+\end{enumerate}
+
+\subsection{Bloque 4: Conversión a FNC y Resolución}
+
+\paragraph{Problema 4.1 --- Conversión a FNC}
+
+\begin{enumerate}
+    \item $P \Leftrightarrow Q$\\
+    \textbf{Paso a paso:}
+    \begin{align*}
+        P \Leftrightarrow Q &\equiv (P \Rightarrow Q) \land (Q \Rightarrow P) &&\text{(def. de }\Leftrightarrow\text{)}\\
+        &\equiv (\neg P \lor Q) \land (\neg Q \lor P) &&\text{(eliminar }\Rightarrow\text{)}
+    \end{align*}
+    Ya es conjunción de disyunciones de literales: no hace falta distribuir más.\\
+    \textbf{FNC:} $(\neg P \lor Q) \land (\neg Q \lor P)$
+
+    \item $\neg(P \lor Q) \Rightarrow R$\\
+    \textbf{Paso a paso:}
+    \begin{align*}
+        \neg(P\lor Q) \Rightarrow R &\equiv \neg\neg(P\lor Q) \lor R &&\text{(eliminar }\Rightarrow\text{)}\\
+        &\equiv (P \lor Q) \lor R &&\text{(doble negación)}\\
+        &\equiv P \lor Q \lor R &&\text{(ya es una sola cláusula)}
+    \end{align*}
+    \textbf{FNC:} $P \lor Q \lor R$
+
+    \item $(A \Rightarrow B) \land (B \Rightarrow C) \Rightarrow (A \Rightarrow C)$\\
+    \textbf{Paso a paso:}
+    \begin{align*}
+        &\equiv \neg\big[(\neg A \lor B)\land(\neg B \lor C)\big] \lor (\neg A \lor C)
+        &&\text{(eliminar las tres }\Rightarrow\text{)}\\
+        &\equiv \big[\neg(\neg A\lor B) \lor \neg(\neg B\lor C)\big] \lor (\neg A \lor C)
+        &&\text{(De Morgan)}\\
+        &\equiv (A \land \neg B) \lor (B \land \neg C) \lor \neg A \lor C
+        &&\text{(De Morgan otra vez, doble negación)}
+    \end{align*}
+    Distribuir $\lor$ sobre $\land$, primero $(A\land\neg B)\lor(B\land\neg C)$:
+    \[
+        (A\lor B)\land(A\lor\neg C)\land(\neg B\lor B)\land(\neg B\lor\neg C)
+    \]
+    Como $\neg B \lor B$ es tautología, se elimina esa cláusula (no aporta restricción):
+    \[
+        (A\lor B)\land(A\lor\neg C)\land(\neg B\lor\neg C)
+    \]
+    Ahora se distribuye ese resultado con $\lor\ (\neg A \lor C)$, clausula por clausula:
+    \begin{align*}
+        (A\lor B\lor\neg A\lor C) \;&\land\; (A\lor\neg C\lor\neg A\lor C) \;\land\; (\neg B\lor\neg C\lor\neg A\lor C)
+    \end{align*}
+    Cada una de las tres cláusulas contiene un literal y su negación ($A,\neg A$ en la primera y
+    segunda; $C,\neg C$ en la segunda y tercera), por lo que \textbf{las tres son tautológicas} y se
+    pueden eliminar todas.\\
+    \textbf{Respuesta:} La FNC resultante no tiene cláusulas (todas son tautologías), lo cual
+    significa que la sentencia original es verdadera en \emph{todo} modelo: es una \textbf{validez}
+    (el silogismo hipotético / transitividad de la implicación, coherente con la Parte C, ítem 5, del
+    Bloque 1).\\
+    \textbf{FNC:} $\top$ (conjunción vacía de cláusulas, todas tautológicas)
+\end{enumerate}
+
+\paragraph{Problema 4.2 --- Validez, FNC y Prueba por Resolución (Ej. 13, Cap. 7 AIMA)}
+
+Sentencia: $[(Comida \Rightarrow Fiesta) \lor (Bebidas \Rightarrow Fiesta)] \Rightarrow [(Comida
+\land Bebidas) \Rightarrow Fiesta]$. Se abrevia $Co=Comida$, $Be=Bebidas$, $Fi=Fiesta$.
+
+\begin{enumerate}
+    \item \textbf{Clasificación por enumeración:}\\
+    \begin{tabular}{ccc|ccc|cc|c}
+        \toprule
+        $Co$ & $Be$ & $Fi$ & $Co{\Rightarrow}Fi$ & $Be{\Rightarrow}Fi$ & LHS(or) & $Co{\land}Be$ & RHS & Total \\
+        \midrule
+        T&T&T&T&T&T&T&T&T\\
+        T&T&F&F&F&F&T&F&T\\
+        T&F&T&T&T&T&F&T&T\\
+        T&F&F&F&T&T&F&T&T\\
+        F&T&T&T&T&T&F&T&T\\
+        F&T&F&T&F&T&F&T&T\\
+        F&F&T&T&T&T&F&T&T\\
+        F&F&F&T&T&T&F&T&T\\
+        \bottomrule
+    \end{tabular}\\
+    \textbf{Clasificación:} \textbf{Válida.}\\
+    \textbf{Justificación:} Las 8 filas dan verdadero. Es interesante notar que la única fila en la
+    que el consecuente (RHS) es falso es $Co{=}T,Be{=}T,Fi{=}F$; pero en esa misma fila el antecedente
+    (LHS) también es falso, así que la implicación completa es $F\Rightarrow F = T$.
+
+    \item \textbf{FNC de cada lado:}\\
+    \textbf{FNC lado izquierdo:}
+    \begin{align*}
+        (Co\Rightarrow Fi)\lor(Be\Rightarrow Fi) &\equiv (\neg Co\lor Fi)\lor(\neg Be\lor Fi)
+        &&\text{(eliminar }\Rightarrow\text{)}\\
+        &\equiv \neg Co \lor \neg Be \lor Fi &&\text{(ya es una sola cláusula; $Fi$ se repite)}
+    \end{align*}
+    \textbf{FNC lado izquierdo:} $\neg Co \lor \neg Be \lor Fi$
+
+    \textbf{FNC lado derecho:}
+    \begin{align*}
+        (Co\land Be)\Rightarrow Fi &\equiv \neg(Co\land Be)\lor Fi &&\text{(eliminar }\Rightarrow\text{)}\\
+        &\equiv \neg Co\lor\neg Be\lor Fi &&\text{(De Morgan)}
+    \end{align*}
+    \textbf{FNC lado derecho:} $\neg Co \lor \neg Be \lor Fi$
+
+    \textbf{Confirmación:} Ambos lados se reducen exactamente a la \emph{misma} cláusula
+    $\neg Co\lor\neg Be\lor Fi$. Como la sentencia completa tiene la forma $X\Rightarrow X$ (con
+    $X$ idéntico a ambos lados), es una tautología por construcción — esto confirma directamente el
+    resultado de validez obtenido por enumeración en (1), y de forma más eficiente.
+
+    \item \textbf{Prueba por resolución.} Para probar que la sentencia es válida (es decir, $\models
+    LHS \Rightarrow RHS$), se niega la conclusión y se busca una contradicción entre $LHS$ y $\neg
+    RHS$.\\
+    \textbf{Cláusulas FNC de $(KB \land \neg\text{conclusión})$:}
+    \begin{itemize}
+        \item $C_1$: $\neg Co \lor \neg Be \lor Fi$ \hfill (de $LHS$)
+        \item $\neg RHS = \neg(\neg Co\lor\neg Be\lor Fi) \equiv Co \land Be \land \neg Fi$
+        (De Morgan), lo que produce tres cláusulas unitarias:
+        \item $C_2$: $Co$
+        \item $C_3$: $Be$
+        \item $C_4$: $\neg Fi$
+    \end{itemize}
+    \textbf{Paso de resolución 1:} Resolver $C_1$ ($\neg Co\lor\neg Be\lor Fi$) con $C_2$ ($Co$) sobre
+    el par complementario $Co/\neg Co$ $\Rightarrow$ se deriva $C_5$: $\neg Be \lor Fi$.\\
+    \textbf{Paso de resolución 2:} Resolver $C_5$ ($\neg Be\lor Fi$) con $C_3$ ($Be$) sobre el par
+    $Be/\neg Be$ $\Rightarrow$ se deriva $C_6$: $Fi$.\\
+    \textbf{Paso de resolución 3:} Resolver $C_6$ ($Fi$) con $C_4$ ($\neg Fi$) sobre el par
+    $Fi/\neg Fi$ $\Rightarrow$ se deriva la \textbf{cláusula vacía} $\bot$.\\
+    \textbf{Conclusión:} Como se derivó $\bot$, el conjunto $\{LHS, \neg RHS\}$ es insatisfacible, por
+    lo tanto $LHS \models RHS$, es decir, la sentencia original es \textbf{válida}. Esto confirma,
+    por tercera vía, el resultado de (1) y (2).
+\end{enumerate}
+
+\subsection{Bloque 5: Cláusulas de Horn, Cláusulas Definidas y Encadenamiento}
+
+\paragraph{Parte A --- Clasificación de Cláusulas}
+
+\textbf{Sección A.1}
+
+\begin{tabular}{cll}
+    \toprule
+    \# & Cláusula & Clasificación (justificación) \\
+    \midrule
+    1 & $A \lor \neg B \lor \neg C$ & Definida, Horn (1 literal positivo: $A$) \\
+    2 & $\neg A \lor \neg B$ & Horn, Objetivo (0 literales positivos) \\
+    3 & $A$ & Definida, Horn, Unitaria (1 literal, positivo) \\
+    4 & $A \lor B \lor \neg C$ & No-Horn (2 literales positivos: $A, B$) \\
+    5 & $\neg A \lor \neg B \lor \neg C$ & Horn, Objetivo (0 literales positivos) \\
+    6 & $B \land C \Rightarrow A \equiv \neg B \lor \neg C \lor A$ & Definida, Horn (1 positivo: $A$) \\
+    7 & $Verdadero \Rightarrow A \equiv A$ & Definida, Horn, Unitaria (equivalente a la cláusula 3) \\
+    \bottomrule
+\end{tabular}
+
+\textbf{Sección A.2 --- Clasificación desde lenguaje natural (Ej. 17, Cap. 7)}
+
+Enunciado: ``Una persona que es radical (R) es elegible (E) si es conservadora (C), pero de lo
+contrario no es elegible.'' Esto se lee como: \emph{si} $R$, entonces ($E$ sii $C$); la oración no
+afirma nada sobre las personas no radicales.
+
+\begin{enumerate}
+    \item \textbf{Análisis de las tres opciones:}
+    \begin{itemize}
+        \item \textbf{Opción 1} ($(R\land E)\Leftrightarrow C$): \textbf{Incorrecta.} Fuerza
+        $C$ a ser falso cada vez que $R$ es falso (porque si $R{=}F$, entonces $R\land E = F$, y el
+        bicondicional exige $C=F$), es decir, afirma que ninguna persona no-radical puede ser
+        conservadora — algo que el enunciado original nunca dice.
+        \item \textbf{Opción 2} ($R\Rightarrow(E\Leftrightarrow C)$): \textbf{Correcta.} Traduce
+        exactamente ``si radical, entonces elegible sii conservador'', y es vacuamente verdadera
+        (no afirma nada) cuando $R$ es falso, tal como exige el enunciado.
+        \item \textbf{Opción 3} ($R\Rightarrow((C\Rightarrow E)\lor \neg E)$): \textbf{Incorrecta.}
+        Simplificando el consecuente: $(C\Rightarrow E)\lor\neg E \equiv (\neg C \lor E)\lor \neg E
+        \equiv \neg C \lor (E \lor \neg E) \equiv \neg C \lor \top \equiv \top$. El consecuente es
+        una tautología, así que toda la fórmula se reduce a $R\Rightarrow\top \equiv \top$: es
+        siempre verdadera y no expresa ninguna restricción real.
+    \end{itemize}
+
+    \item \textbf{Conversión a forma clausular de la opción correcta (Opción 2):}
+    \begin{align*}
+        R\Rightarrow(E\Leftrightarrow C) &\equiv \neg R \lor (E\Leftrightarrow C) \\
+        &\equiv \neg R \lor \big[(\neg E\lor C)\land(\neg C\lor E)\big] &&\text{(bicondicional)}\\
+        &\equiv (\neg R\lor\neg E\lor C) \land (\neg R\lor\neg C\lor E) &&\text{(distribuir }\lor\text{ sobre }\land\text{)}
+    \end{align*}
+    \textbf{Respuesta:} Dos cláusulas: $(\neg R\lor\neg E\lor C)$ y $(\neg R\lor\neg C\lor E)$.\\
+    \textbf{Respuesta (Horn):} \textbf{Sí, ambas son cláusulas de Horn.} La primera tiene exactamente
+    un literal positivo ($C$), la segunda tiene exactamente un literal positivo ($E$); ambas son de
+    hecho \textbf{definidas} ($R\land E \Rightarrow C$ y $R\land C \Rightarrow E$
+    respectivamente).
+
+    \item \textbf{¿Podría un algoritmo de encadenamiento resolver esta KB?}\\
+    \textbf{Respuesta:} Sí. Como la representación correcta (Opción 2) se descompone en dos
+    cláusulas definidas (de Horn), tanto el encadenamiento hacia adelante como el encadenamiento
+    hacia atrás son correctos y completos para procesarla, siempre que el resto de la KB (hechos
+    sobre $R$, $C$, $E$ para individuos concretos) también esté en forma de Horn.
+\end{enumerate}
+
+\paragraph{Parte B --- Encadenamiento Hacia Adelante}
+
+KB: $H_1: A$, $H_2: B$, $R_1: A\land B\Rightarrow C$, $R_2: C\Rightarrow D$, $R_3: B\land D
+\Rightarrow E$, $R_4: E\Rightarrow F$, $R_5: A\land F\Rightarrow G$.
+
+\begin{enumerate}
+    \item \textbf{Traza:}\\
+    \begin{tabular}{cll}
+        \toprule
+        Paso & Regla Aplicada & Nuevo Hecho Derivado \\
+        \midrule
+        1 & $H_1$ (hecho inicial) & $A$ \\
+        2 & $H_2$ (hecho inicial) & $B$ \\
+        3 & $R_1$: $A\land B\Rightarrow C$ ($A,B$ ya conocidos) & $C$ \\
+        4 & $R_2$: $C\Rightarrow D$ ($C$ ya conocido) & $D$ \\
+        5 & $R_3$: $B\land D\Rightarrow E$ ($B,D$ ya conocidos) & $E$ \\
+        6 & $R_4$: $E\Rightarrow F$ ($E$ ya conocido) & $F$ \\
+        7 & $R_5$: $A\land F\Rightarrow G$ ($A,F$ ya conocidos) & $G$ \\
+        \bottomrule
+    \end{tabular}
+
+    \item \textbf{¿Es $G$ consecuencia lógica?} \textbf{Sí.} El encadenamiento hacia adelante es
+    correcto (sound) y completo para KB de Horn; como derivó $G$ en el paso 7 mediante una cadena de
+    reglas cuyas premisas estaban satisfechas en cada momento, se concluye $KB \models G$.
+
+    \item \textbf{Literales que son consecuencia lógica de la KB:} $A, B, C, D, E, F, G$ — todos los
+    hechos derivados por la traza, ya que el algoritmo terminó sin poder agregar nada más y ningún
+    otro símbolo aparece en la KB.
+\end{enumerate}
+
+\paragraph{Parte C --- Encadenamiento Hacia Atrás}
+
+\begin{enumerate}
+    \item \textbf{Árbol de prueba Y-O para la consulta $G$:}
+\begin{verbatim}
+G                                        (meta)
+`-- R5: A y F => G                      (nodo-Y: se requieren ambas ramas)
+    |-- A                               (hecho, hoja OK)
+    `-- F
+        `-- R4: E => F
+            `-- E
+                `-- R3: B y D => E       (nodo-Y: se requieren ambas ramas)
+                    |-- B                (hecho, hoja OK)
+                    `-- D
+                        `-- R2: C => D
+                            `-- C
+                                `-- R1: A y B => C   (nodo-Y: se requieren ambas ramas)
+                                    |-- A            (hecho, hoja OK, ya probado)
+                                    `-- B            (hecho, hoja OK, ya probado)
+
+\end{verbatim}
+    Cada nodo etiquetado con una regla es un nodo ``Y'' (AND): todas sus ramas hijas deben probarse.
+    La recursión termina exitosamente cuando cada hoja es un hecho de la KB ($A$ o $B$).
+
+    \item \textbf{Comparación:}\\
+    \textbf{Pasos hacia adelante:} 7 hechos derivados (incluye los 2 hechos iniciales), en un único
+    recorrido que expande \emph{toda} la KB sin importar la consulta.\\
+    \textbf{Pasos hacia atrás:} Se exploran únicamente las submetas necesarias para $G$: $A, F, E, B,
+    D, C$ (mismos 7 nodos en este caso particular, porque esta KB es una cadena lineal donde cada
+    hecho es relevante para $G$), pero solo se expanden las reglas cuya \emph{cabeza} coincide con la
+    meta actual, nunca reglas irrelevantes.\\
+    \textbf{Preferencia:} En esta KB lineal ambos métodos exploran esencialmente el mismo número de
+    nodos, así que no hay ventaja clara. En general, se prefiere \textbf{hacia adelante} cuando se
+    quieren derivar \emph{todas} las consecuencias de la KB (o la KB es pequeña y densa en reglas
+    relevantes), y \textbf{hacia atrás} cuando solo interesa responder una consulta puntual en una KB
+    grande con muchos hechos/reglas irrelevantes para esa consulta (evita trabajo innecesario).
+\end{enumerate}
+
+\paragraph{Parte D --- Completitud y Limitaciones}
+
+\begin{enumerate}
+    \item \textbf{¿Puede el encadenamiento hacia adelante manejar $(A\lor B \Rightarrow C)$?}\\
+    \textbf{Respuesta:} No directamente en esa forma sintáctica, porque el algoritmo espera premisas
+    unidas por $\land$ (todas deben cumplirse a la vez), no por $\lor$. Sin embargo, al convertir la
+    cláusula a FNC se obtiene $(A\lor B)\Rightarrow C \equiv \neg(A\lor B)\lor C \equiv (\neg A\land
+    \neg B)\lor C \equiv (\neg A\lor C)\land(\neg B\lor C)$, es decir, dos cláusulas de Horn
+    separadas y equivalentes: $A\Rightarrow C$ y $B\Rightarrow C$. Una vez descompuesta así, el
+    encadenamiento hacia adelante sí puede procesarla (disparando $C$ si se conoce $A$ \emph{o} si se
+    conoce $B$, por separado).
+
+    \item \textbf{KB con solo cláusulas no-Horn — ¿qué algoritmos sirven?}\\
+    \textbf{Respuesta:} Al menos dos: (1) \textbf{TT-Implica?} (enumeración de tablas de verdad),
+    correcto y completo para cualquier KB proposicional aunque exponencial; (2) \textbf{Refutación por
+    resolución}, correcta y completa para cualquier conjunto de cláusulas en FNC, sin requerir
+    estructura de Horn. (También podría usarse DPLL para decidir la satisfacibilidad de $KB\land\neg
+    \alpha$.)
+
+    \item \textbf{Complejidad temporal: encadenamiento hacia adelante (Horn) vs. TT-Implica?
+    (general).}\\
+    \textbf{Respuesta:} El encadenamiento hacia adelante sobre una KB de Horn es \textbf{lineal} en
+    el tamaño de la KB, $\bigO{n}$: cada cláusula se examina y dispara a lo sumo una vez, llevando un
+    contador de premisas pendientes por cláusula, sin necesidad de retroceder ni de "adivinar"
+    valores de verdad. TT-Implica? sobre una KB proposicional general es \textbf{exponencial},
+    $\bigO{2^n}$ en el número de símbolos, porque enumera todas las asignaciones de verdad posibles
+    sin asumir ninguna estructura.\\
+    \textbf{Respuesta (por qué):} La diferencia se debe a que las cláusulas de Horn (a lo sumo un
+    literal positivo) tienen una estructura dirigida (premisas $\Rightarrow$ conclusión) que permite
+    propagar hechos ya establecidos de forma monótona y determinista, sin bifurcaciones; una KB
+    general (con cláusulas no-Horn) no tiene esa estructura, y en el peor caso hay que probar
+    combinaciones de valores de verdad para decidir la consecuencia lógica.
+\end{enumerate}
