@@ -31,10 +31,22 @@ La primera es mucho más débil que la segunda.
 
 \subsection{Cláusulas de Horn y Encadenamiento hacia Adelante}
 
-Una \textbf{cláusula definida} tiene la forma $P_1 \land \cdots \land P_n \Rightarrow Q$ (a lo sumo
-un literal positivo). El \textbf{encadenamiento hacia adelante} (forward chaining) parte de los
-hechos conocidos y aplica reglas cuyas premisas ya están satisfechas, derivando nuevos hechos hasta
-alcanzar la meta o agotar la agenda.
+\begin{definition}[Cláusula de Horn y cláusula definida]
+Una \textbf{cláusula de Horn} es una disyunción de literales con \emph{a lo sumo un literal
+positivo} (puede no tener ninguno, en cuyo caso es una \textbf{cláusula meta} o de restricción, útil
+para expresar una contradicción). Una \textbf{cláusula definida} es una cláusula de Horn con
+\emph{exactamente un} literal positivo, y se escribe como implicación
+\[
+    P_1 \land \cdots \land P_n \Rightarrow Q
+\]
+(las premisas $P_i$ deben ser todas verdaderas para concluir $Q$). Todo el material de esta guía
+(Ejercicios 2 y 3) usa cláusulas \emph{definidas}: por eso el encadenamiento hacia adelante y hacia
+atrás son aplicables y completos.
+\end{definition}
+
+El \textbf{encadenamiento hacia adelante} (forward chaining) parte de los hechos conocidos y aplica
+reglas cuyas premisas ya están satisfechas, derivando nuevos hechos hasta alcanzar la meta o agotar
+la agenda.
 
 \begin{definition}[PL-FC-ENTAILS?, con agenda y contadores]
 Se mantiene, para cada regla, un \textbf{contador} con el número de premisas aún no confirmadas, y
@@ -43,6 +55,30 @@ extrae el siguiente símbolo $p$ de la agenda; si $p$ es la meta, se retorna ver
 marca $p$ como inferido y, por cada regla donde $p$ aparece en la premisa, se decrementa su
 contador; si un contador llega a $0$, la conclusión de esa regla se agrega a la agenda.
 \end{definition}
+
+\begin{algorithm}[H]
+\caption{PL-FC-ENTAILS?($KB, q$) --- forward chaining con agenda y contadores}
+\begin{algorithmic}[1]
+\State $count[c] \gets$ número de símbolos en la premisa de $c$, para cada cláusula $c \in KB$
+\State $inferred[s] \gets \textbf{falso}$, para cada símbolo $s$
+\State $agenda \gets$ símbolos conocidos verdaderos en $KB$
+\While{$agenda$ no está vacía}
+    \State $p \gets \Call{Pop}{agenda}$
+    \If{$p = q$} \Return \textbf{verdadero}
+    \EndIf
+    \If{$inferred[p] = \textbf{falso}$}
+        \State $inferred[p] \gets \textbf{verdadero}$
+        \For{cada cláusula $c$ tal que $p$ aparece en $c.\textsc{premisa}$}
+            \State decrementar $count[c]$
+            \If{$count[c] = 0$}
+                \State agregar $c.\textsc{conclusion}$ a $agenda$
+            \EndIf
+        \EndFor
+    \EndIf
+\EndWhile
+\State \Return \textbf{falso}
+\end{algorithmic}
+\end{algorithm}
 
 \begin{itemize}
     \item \textbf{Completo} para bases de conocimiento proposicionales de cláusulas de Horn (deriva
@@ -88,13 +124,38 @@ incorrectas que un motor completo rechazaría.
 
 \subsection{Forma Clausal y Resolución por Refutación en LPO}
 
-Para aplicar resolución en LPO, cada sentencia se convierte a \textbf{forma normal conjuntiva (FNC)}
-mediante los pasos estándar: eliminar $\Rightarrow$ y $\Leftrightarrow$; mover $\neg$ hacia adentro
-(De Morgan, $\neg\forall x\,\Phi \equiv \exists x\,\neg\Phi$, $\neg\exists x\,\Phi \equiv
-\forall x\,\neg\Phi$); \textbf{estandarizar variables} (renombrar para que cada cuantificador use una
-variable distinta); \textbf{Skolemizar} (reemplazar cada variable existencial por una constante o
-función de Skolem de las variables universales que la contienen, según corresponda) y eliminar los
-cuantificadores universales restantes (quedan implícitos); distribuir $\lor$ sobre $\land$.
+\begin{definition}[Forma normal conjuntiva (FNC) en LPO --- pasos de conversión]
+Toda sentencia de LPO se convierte a FNC (conjunción de cláusulas, cada una disyunción de literales)
+siguiendo, en orden, estos pasos:
+\begin{enumerate}
+    \item \textbf{Eliminar} $\Leftrightarrow$ y $\Rightarrow$: $\alpha\Leftrightarrow\beta$ se
+    reescribe $(\alpha\Rightarrow\beta)\land(\beta\Rightarrow\alpha)$, y $\alpha\Rightarrow\beta$ se
+    reescribe $\neg\alpha\lor\beta$.
+    \item \textbf{Mover $\neg$ hacia adentro} (leyes de De Morgan y de cuantificadores):
+    $\neg(\alpha\land\beta)\equiv\neg\alpha\lor\neg\beta$,
+    $\neg(\alpha\lor\beta)\equiv\neg\alpha\land\neg\beta$,
+    $\neg\forall x\,\Phi\equiv\exists x\,\neg\Phi$, $\neg\exists x\,\Phi\equiv\forall x\,\neg\Phi$,
+    $\neg\neg\alpha\equiv\alpha$.
+    \item \textbf{Estandarizar variables}: renombrar variables ligadas para que cada cuantificador use
+    un nombre distinto (evita colisiones al combinar cláusulas de sentencias distintas).
+    \item \textbf{Skolemizar} (ver definición siguiente): eliminar cada cuantificador existencial
+    reemplazando su variable por una constante o función de Skolem.
+    \item \textbf{Eliminar los cuantificadores universales} restantes (quedan implícitos: toda
+    variable libre en una cláusula se entiende universalmente cuantificada).
+    \item \textbf{Distribuir $\lor$ sobre $\land$} hasta que la fórmula sea una conjunción de
+    disyunciones de literales; cada conjunto separado por $\land$ es una cláusula distinta.
+\end{enumerate}
+\end{definition}
+
+\begin{definition}[Skolemización]
+Si una variable existencial $\exists y$ \textbf{no} está dentro del alcance de ningún $\forall$, se
+reemplaza $y$ por una \textbf{constante de Skolem} nueva (un objeto concreto, aunque desconocido, que
+testifica la existencia). Si $\exists y$ \emph{sí} está dentro del alcance de $\forall x_1,\ldots,
+\forall x_k$, se reemplaza $y$ por una \textbf{función de Skolem} nueva $f(x_1,\ldots,x_k)$ (el
+testigo puede depender de esos universales). Por ejemplo, $\forall x\,\exists y\,Padre(y,x)$
+(``todo el mundo tiene un padre'') se skolemiza como $\forall x\,Padre(S(x),x)$: $S(x)$ denota
+\emph{el} padre de $x$, que en general depende de $x$.
+\end{definition}
 
 \begin{itemize}
     \item \textbf{Regla de resolución (LPO):}
@@ -428,31 +489,70 @@ infinito} al intentar recorrer, imprimir o comparar ese término infinito.
 
 \paragraph{a) Forma clausal (variables estandarizadas)}
 
-\begin{align*}
-    C_1&:\ \neg TieneLlave(x_1) \lor \neg TurnoNocturno(x_1) \lor Accede(x_1,Boveda)\\
-    C_2&:\ \neg Accede(x_2,Boveda) \lor \neg Registro(x_2,y_2) \lor Movio(x_2,y_2)\\
-    C_3&:\ TieneLlave(Bruno) \qquad C_4:\ TurnoNocturno(Bruno) \qquad C_5:\ Registro(Bruno,Poporo)\\
-    C_6&:\ TieneLlave(Amparo) \qquad C_7:\ TurnoNocturno(Celia)
-\end{align*}
-Negación de la meta: $\neg\alpha = \neg\exists x\, Movio(x,Poporo) \equiv \forall x\,
-\neg Movio(x,Poporo)$, que en forma clausal (variable universal implícita, estandarizada como $x_3$)
-es
+Se aplican los pasos de conversión a FNC de la definición anterior a cada sentencia.
+
+\textbf{Sentencia 1} ($TieneLlave(x)\land TurnoNocturno(x) \Rightarrow Accede(x,Boveda)$):
+\begin{description}
+    \item[Paso 1] (eliminar $\Rightarrow$):
+    \[
+        \forall x\ \neg\big(TieneLlave(x)\land TurnoNocturno(x)\big) \lor Accede(x,Boveda)
+    \]
+    \item[Paso 2] (De Morgan):
+    \[
+        \forall x\ \big(\neg TieneLlave(x)\lor\neg TurnoNocturno(x)\big) \lor Accede(x,Boveda)
+    \]
+    \item[Paso 3] (estandarizar): $x\to x_1$.
+    \item[Pasos 4--6] (no hay $\exists$ que skolemizar; se elimina $\forall$; ya es disyunción):
+    \[
+        C_1:\ \neg TieneLlave(x_1) \lor \neg TurnoNocturno(x_1) \lor Accede(x_1,Boveda)
+    \]
+\end{description}
+
+\textbf{Sentencia 2} ($Accede(x,Boveda)\land Registro(x,y) \Rightarrow Movio(x,y)$): por el mismo
+procedimiento (eliminar $\Rightarrow$, De Morgan, estandarizar $x,y\to x_2,y_2$, sin existenciales
+que skolemizar), se obtiene directamente
 \[
-    C_8:\ \neg Movio(x_3,Poporo).
+    C_2:\ \neg Accede(x_2,Boveda) \lor \neg Registro(x_2,y_2) \lor Movio(x_2,y_2).
 \]
+
+\textbf{Hechos} (ya son cláusulas unitarias, sin cuantificadores ni conectivos que eliminar):
+\[
+    C_3:\ TieneLlave(Bruno) \qquad C_4:\ TurnoNocturno(Bruno) \qquad C_5:\ Registro(Bruno,Poporo)
+\]
+\[
+    C_6:\ TieneLlave(Amparo) \qquad C_7:\ TurnoNocturno(Celia)
+\]
+
+\textbf{Negación de la meta} $\alpha = \exists x\, Movio(x,Poporo)$:
+\begin{description}
+    \item[Paso 0] (negar): $\neg\alpha = \neg\exists x\, Movio(x,Poporo)$.
+    \item[Paso 2] (mover $\neg$ hacia adentro, $\neg\exists x\,\Phi\equiv\forall x\,\neg\Phi$):
+    $\forall x\, \neg Movio(x,Poporo)$.
+    \item[Paso 3] (estandarizar): $x\to x_3$.
+    \item[Pasos 4--6] (no hay $\exists$ que skolemizar; se elimina $\forall$): $C_8:\
+    \neg Movio(x_3,Poporo)$.
+\end{description}
+Nótese que $\exists x$ en la meta \emph{original} $\alpha$ no se skolemiza directamente: se skolemiza
+la variable existencial \emph{después de negar}, y aquí la negación la convirtió en universal, así
+que no aparece ninguna constante de Skolem en $C_8$ (a diferencia del Ejercicio 4.a.2, donde el
+$\exists x$ sí quedaría como variable libre estandarizada si se llevara a FNC, sin universales que lo
+envuelvan).
 
 \paragraph{b) Refutación por resolución}
 
 \begin{table}[H]
 \centering
-\begin{tabular}{clll}
+\small
+\begin{tabular}{@{}c p{2.6cm} p{2.2cm} p{6.4cm}@{}}
 \toprule
 Paso & Cláusulas resueltas & MGU & Resolvente \\
 \midrule
-1 & $C_3$ con $C_1$ & $\{x_1/Bruno\}$ & $C_9:\ \neg TurnoNocturno(Bruno)\lor Accede(Bruno,Boveda)$\\
-2 & $C_4$ con $C_9$ & $\{\}$ (ya coincide en $Bruno$) & $C_{10}:\ Accede(Bruno,Boveda)$\\
-3 & $C_{10}$ con $C_2$ & $\{x_2/Bruno\}$ & $C_{11}:\ \neg Registro(Bruno,y_2)\lor Movio(Bruno,y_2)$\\
-4 & $C_5$ con $C_{11}$ & $\{y_2/Poporo\}$ & $C_{12}:\ Movio(Bruno,Poporo)$\\
+1 & $C_3$ con $C_1$ & $\{x_1/Bruno\}$ & $C_9:\ \neg TurnoNocturno(Bruno)\lor
+Accede(Bruno,Boveda)$\\[4pt]
+2 & $C_4$ con $C_9$ & $\{\}$ (ya coincide en $Bruno$) & $C_{10}:\ Accede(Bruno,Boveda)$\\[4pt]
+3 & $C_{10}$ con $C_2$ & $\{x_2/Bruno\}$ & $C_{11}:\ \neg Registro(Bruno,y_2)\lor
+Movio(Bruno,y_2)$\\[4pt]
+4 & $C_5$ con $C_{11}$ & $\{y_2/Poporo\}$ & $C_{12}:\ Movio(Bruno,Poporo)$\\[4pt]
 5 & $C_{12}$ con $C_8$ & $\{x_3/Bruno\}$ & $\square$ (cláusula vacía)\\
 \bottomrule
 \end{tabular}
@@ -461,27 +561,28 @@ Paso & Cláusulas resueltas & MGU & Resolvente \\
 
 \begin{figure}[H]
 \centering
+\resizebox{\textwidth}{!}{%
 \begin{tikzpicture}[
-  clause/.style={draw=black, thick, rectangle, rounded corners=1pt, inner sep=3pt, font=\scriptsize,
-  align=center, text width=3.4cm}
+  clause/.style={draw=black, thick, rectangle, rounded corners=1pt, inner sep=3pt, font=\tiny,
+  align=center, text width=2.9cm}
 ]
-\node[clause] (C3)  at (0,0)     {$C_3$: $TieneLlave(Bruno)$};
-\node[clause] (C1)  at (3.6,0)   {$C_1$: $\neg TieneLlave(x_1)\lor\neg TurnoNocturno(x_1)\lor
+\node[clause] (C3)  at (0,0)      {$C_3$: $TieneLlave(Bruno)$};
+\node[clause] (C1)  at (4.2,0)    {$C_1$: $\neg TieneLlave(x_1)\lor\neg TurnoNocturno(x_1)\lor
 Accede(x_1,Boveda)$};
-\node[clause] (C9)  at (1.8,-2)  {$C_9$: $\neg TurnoNocturno(Bruno)\lor Accede(Bruno,Boveda)$};
+\node[clause] (C9)  at (2.1,-2.6) {$C_9$: $\neg TurnoNocturno(Bruno)\lor Accede(Bruno,Boveda)$};
 
-\node[clause] (C4)  at (5.2,-2)  {$C_4$: $TurnoNocturno(Bruno)$};
-\node[clause] (C10) at (3.5,-4)  {$C_{10}$: $Accede(Bruno,Boveda)$};
+\node[clause] (C4)  at (6.3,-2.6) {$C_4$: $TurnoNocturno(Bruno)$};
+\node[clause] (C10) at (4.2,-5.2) {$C_{10}$: $Accede(Bruno,Boveda)$};
 
-\node[clause] (C2)  at (6.9,-4)  {$C_2$: $\neg Accede(x_2,Boveda)\lor\neg Registro(x_2,y_2)\lor
+\node[clause] (C2)  at (8.4,-5.2) {$C_2$: $\neg Accede(x_2,Boveda)\lor\neg Registro(x_2,y_2)\lor
 Movio(x_2,y_2)$};
-\node[clause] (C11) at (5.2,-6)  {$C_{11}$: $\neg Registro(Bruno,y_2)\lor Movio(Bruno,y_2)$};
+\node[clause] (C11) at (6.3,-7.8) {$C_{11}$: $\neg Registro(Bruno,y_2)\lor Movio(Bruno,y_2)$};
 
-\node[clause] (C5)  at (8.6,-6)  {$C_5$: $Registro(Bruno,Poporo)$};
-\node[clause] (C12) at (6.9,-8)  {$C_{12}$: $Movio(Bruno,Poporo)$};
+\node[clause] (C5)  at (10.5,-7.8) {$C_5$: $Registro(Bruno,Poporo)$};
+\node[clause] (C12) at (8.4,-10.4) {$C_{12}$: $Movio(Bruno,Poporo)$};
 
-\node[clause] (C8)  at (10.3,-8) {$C_8$: $\neg Movio(x_3,Poporo)$};
-\node[clause] (NIL) at (8.6,-10) {$\square$};
+\node[clause] (C8)  at (12.6,-10.4) {$C_8$: $\neg Movio(x_3,Poporo)$};
+\node[clause] (NIL) at (10.5,-13.0) {$\square$};
 
 \draw[-{Latex},thick] (C3)  -- (C9);
 \draw[-{Latex},thick] (C1)  -- (C9);
@@ -493,7 +594,8 @@ Movio(x_2,y_2)$};
 \draw[-{Latex},thick] (C5)  -- (C12);
 \draw[-{Latex},thick] (C12) -- (NIL);
 \draw[-{Latex},thick] (C8)  -- (NIL);
-\end{tikzpicture}
+\end{tikzpicture}%
+}
 \caption{Árbol de refutación completo: cada resolvente combina los dos nodos que apuntan hacia él,
 hasta llegar a $\square$.}
 \end{figure}
