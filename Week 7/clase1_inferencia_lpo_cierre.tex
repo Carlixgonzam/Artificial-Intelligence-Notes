@@ -1,12 +1,543 @@
-% Clase 1 — Inferencia en LPO (cierre y repaso)
-% Lectura: AIMA Cap. 9
+% Clase 1 — Inferencia en LPO (cierre y repaso) + Guía resuelta de Lógica e Inferencia
+% Lectura: AIMA Cap. 7, 8, 9
 \section{Inferencia en LPO: Cierre}
 
-% Completa esta sección con ejercicios de resolución y encadenamiento
-% vistos en clase. Sirve de puente entre lógica y planeación.
+Esta clase cierra la unidad de lógica e inferencia (AIMA Cap. 7--9) antes de pasar a planeación: se
+repasan model checking en lógica proposicional, encadenamiento hacia adelante y hacia atrás sobre
+cláusulas de Horn, unificación y el occurs check, y resolución por refutación en LPO. Luego se aplica
+todo el repaso a una guía de ejercicios completa, resuelta paso a paso.
 
-\begin{notebox}
-Repaso de resolución en LPO con ejemplos. Transición hacia planeación.
-\end{notebox}
+\subsection{Lógica Proposicional: Entailment y Model Checking}
 
-% ---- Espacio para apuntes de clase ----
+\begin{definition}[Implicación lógica]
+$KB \models \alpha$ (``$KB$ implica $\alpha$'') si y solo si $\alpha$ es verdadera en \emph{todo}
+modelo en el que $KB$ es verdadera. Equivalentemente (teorema de refutación):
+\[
+    KB \models \alpha \quad \text{si y solo si} \quad KB \land \neg\alpha \text{ es insatisfacible.}
+\]
+\end{definition}
+
+\textbf{Model checking (TT-Entails?)}: para un número finito de símbolos proposicionales, se
+enumeran las $2^n$ interpretaciones posibles (tabla de verdad completa), se marcan los
+\textbf{modelos} de $KB$ (filas donde $KB$ es verdadera) y se verifica si $\alpha$ es verdadera en
+todos ellos. Un solo \textbf{contramodelo} (modelo de $KB$ donde $\alpha$ es falsa) basta para
+refutar $KB \models \alpha$. Es importante distinguir dos nociones que se confunden con frecuencia:
+\begin{itemize}
+    \item $\alpha$ es \textbf{consistente} con $KB$: existe \emph{al menos un} modelo de $KB$ donde
+    $\alpha$ es verdadera ($KB \land \alpha$ es satisfacible).
+    \item $KB \models \alpha$: $\alpha$ es verdadera en \textbf{todos} los modelos de $KB$.
+\end{itemize}
+La primera es mucho más débil que la segunda.
+
+\subsection{Cláusulas de Horn y Encadenamiento hacia Adelante}
+
+Una \textbf{cláusula definida} tiene la forma $P_1 \land \cdots \land P_n \Rightarrow Q$ (a lo sumo
+un literal positivo). El \textbf{encadenamiento hacia adelante} (forward chaining) parte de los
+hechos conocidos y aplica reglas cuyas premisas ya están satisfechas, derivando nuevos hechos hasta
+alcanzar la meta o agotar la agenda.
+
+\begin{definition}[PL-FC-ENTAILS?, con agenda y contadores]
+Se mantiene, para cada regla, un \textbf{contador} con el número de premisas aún no confirmadas, y
+una \textbf{agenda} FIFO de símbolos conocidos verdaderos que faltan por procesar. En cada paso se
+extrae el siguiente símbolo $p$ de la agenda; si $p$ es la meta, se retorna verdadero; si no, se
+marca $p$ como inferido y, por cada regla donde $p$ aparece en la premisa, se decrementa su
+contador; si un contador llega a $0$, la conclusión de esa regla se agrega a la agenda.
+\end{definition}
+
+\begin{itemize}
+    \item \textbf{Completo} para bases de conocimiento proposicionales de cláusulas de Horn (deriva
+    exactamente los hechos implicados, ni más ni menos).
+    \item \textbf{Dirigido por los datos} (\textit{data-driven}): no usa la meta para decidir qué
+    reglas disparar, así que puede derivar hechos verdaderos pero \textbf{irrelevantes} para la
+    consulta.
+\end{itemize}
+
+\subsection{Encadenamiento hacia Atrás}
+
+El \textbf{encadenamiento hacia atrás} (backward chaining) parte de la meta y busca reglas cuya
+conclusión coincida con ella; cada premisa de esas reglas se convierte, recursivamente, en una nueva
+\textbf{submeta}. Un hecho de la base resuelve una submeta directamente (hoja del árbol de prueba).
+
+\begin{itemize}
+    \item \textbf{Dirigido por la meta} (\textit{goal-driven}): solo explora lo relevante para probar
+    la consulta.
+    \item Cuando una regla no logra probar una submeta (no hay hechos ni otra regla aplicable, o
+    todas las alternativas fallan), ocurre \textbf{backtracking}: se descarta el intento y se prueba
+    la siguiente regla cuya conclusión coincida con esa submeta.
+    \item Completo para cláusulas de Horn; es la base operacional de Prolog. Sin control de ciclos
+    puede entrar en bucles infinitos si una submeta depende (directa o indirectamente) de sí misma.
+\end{itemize}
+
+\subsection{Sustitución, Unificación y Occurs Check}
+
+\begin{definition}[Unificador más general, UMG]
+$\text{UNIFY}(p,q) = \theta$ tal que $\text{SUBST}(\theta, p) = \text{SUBST}(\theta, q)$, y $\theta$
+es el \textbf{más general} posible: cualquier otro unificador $\theta'$ se obtiene componiendo
+$\theta$ con una sustitución adicional. La unificación procede posición a posición: variable con
+término (se liga la variable), constante con constante idéntica (coincide sin generar ligadura),
+constantes distintas o predicados/aridades distintas (falla).
+\end{definition}
+
+\begin{definition}[Occurs check]
+Antes de ligar una variable $x$ a un término $t$, el \textbf{occurs check} verifica que $x$ \emph{no
+aparezca dentro de} $t$. Si $x$ ocurriera en $t$, la ligadura $x/t$ generaría un término
+\textbf{infinito} (p. ej. $x = f(x) = f(f(x)) = \cdots$), que no es un objeto válido en LPO. Muchas
+implementaciones de Prolog omiten el occurs check por eficiencia, arriesgando unificaciones
+incorrectas que un motor completo rechazaría.
+\end{definition}
+
+\subsection{Forma Clausal y Resolución por Refutación en LPO}
+
+Para aplicar resolución en LPO, cada sentencia se convierte a \textbf{forma normal conjuntiva (FNC)}
+mediante los pasos estándar: eliminar $\Rightarrow$ y $\Leftrightarrow$; mover $\neg$ hacia adentro
+(De Morgan, $\neg\forall x\,\Phi \equiv \exists x\,\neg\Phi$, $\neg\exists x\,\Phi \equiv
+\forall x\,\neg\Phi$); \textbf{estandarizar variables} (renombrar para que cada cuantificador use una
+variable distinta); \textbf{Skolemizar} (reemplazar cada variable existencial por una constante o
+función de Skolem de las variables universales que la contienen, según corresponda) y eliminar los
+cuantificadores universales restantes (quedan implícitos); distribuir $\lor$ sobre $\land$.
+
+\begin{itemize}
+    \item \textbf{Regla de resolución (LPO):}
+    $$\dfrac{\ell_1 \lor \cdots \lor \ell_k \qquad \neg m_1 \lor \cdots \lor \neg m_j}
+    {\text{SUBST}(\theta,\ \ell_1 \lor \cdots \lor m_j)} \qquad \theta = \text{UNIFY}(\ell_i, m_i)$$
+    \item \textbf{Refutación:} para probar $KB \models \alpha$, se agrega $\neg\alpha$ (en FNC) al
+    conjunto de cláusulas de $KB$ y se aplica resolución hasta derivar la \textbf{cláusula vacía}
+    $\square$ (contradicción) —lo que confirma que $KB \land \neg\alpha$ es insatisfacible— o hasta
+    no poder generar cláusulas nuevas (en cuyo caso $KB \not\models \alpha$).
+    \item La resolución en LPO es \textbf{sana y completa por refutación} (teorema de completitud de
+    Gödel), pero solo \textbf{semi-decidible}: si $KB \models \alpha$, se garantiza encontrar
+    $\square$ en un número finito de pasos; si $KB \not\models \alpha$, el procedimiento puede no
+    terminar nunca.
+\end{itemize}
+
+\newpage
+\section{Ejercicios: Guía de Lógica e Inferencia (con solución paso a paso)}
+
+Esta sección resuelve, de principio a fin, la \textit{Guía de Ejercicios: Lógica e Inferencia}.
+
+\subsection{Bloque 1: Preguntas Conceptuales (Verdadero / Falso)}
+
+\begin{enumerate}
+    \item[a.] \textit{``Si una sentencia $\alpha$ es satisfacible, entonces $KB \models \alpha$ para
+    cualquier base de conocimiento $KB$ consistente con $\alpha$.''}\\
+    \textbf{Falso.} Satisfacibilidad de $\alpha$ solo dice que $\alpha$ es verdadera en \emph{algún}
+    modelo; que $KB$ sea \emph{consistente} con $\alpha$ solo dice que $KB \land \alpha$ tiene algún
+    modelo. Ninguna de las dos garantiza que $\alpha$ sea verdadera en \textbf{todos} los modelos de
+    $KB$, que es lo que exige $\models$.\\
+    \textbf{Contraejemplo:} $KB = \{P\}$, $\alpha = Q$. $\alpha$ es satisfacible, y $KB$ es
+    consistente con $\alpha$ (el modelo $P{=}T, Q{=}T$ satisface ambos), pero $KB \not\models Q$
+    (el modelo $P{=}T, Q{=}F$ también es modelo de $KB$ y no de $Q$).
+
+    \item[b.] \textit{``El encadenamiento hacia adelante (forward chaining) es completo para bases de
+    conocimiento proposicionales formadas por cláusulas de Horn.''}\\
+    \textbf{Verdadero.} Para cláusulas de Horn (cada regla con a lo sumo un literal positivo), el
+    algoritmo con agenda y contadores deriva exactamente todos los símbolos atómicos implicados por
+    $KB$: es sano (solo deriva lo que se sigue lógicamente) y completo (deriva todo lo que se sigue).
+
+    \item[c.] \textit{``$KB \models \alpha$ si y solo si la sentencia $(KB \land \neg\alpha)$ es
+    insatisfacible.''}\\
+    \textbf{Verdadero.} Es el \textbf{teorema de refutación}, base de todo método de prueba por
+    contradicción (model checking negativo y resolución): si $\alpha$ fuera falsa en algún modelo de
+    $KB$, ese modelo satisface simultáneamente $KB$ y $\neg\alpha$; si ningún modelo satisface ambos a
+    la vez, entonces $\alpha$ es verdadera en todo modelo de $KB$.
+
+    \item[d.] \textit{``Durante la unificación es válido sustituir un término por una constante de
+    Skolem, de la misma forma en que se sustituye una variable.''}\\
+    \textbf{Falso.} Las constantes (y funciones) de Skolem se introducen \emph{antes} de la
+    unificación, durante la conversión a FNC, para eliminar cuantificadores existenciales; representan
+    un objeto \textbf{fijo pero arbitrario} del dominio, no un comodín instanciable. La unificación
+    solo liga \textbf{variables} (símbolos que aún pueden tomar cualquier valor) a términos; una
+    constante de Skolem se comporta como cualquier otra constante: puede aparecer \emph{dentro} de un
+    término al que se liga una variable, pero ella misma no puede recibir una ligadura ni ser tratada
+    como si fuera libre de unificarse con otro término distinto.
+\end{enumerate}
+
+\subsection{Ejercicio 1: El apagón en Paloquemao}
+
+Símbolos: $P$ (falló la planta), $S$ (sobrecarga en neveras), $T$ (transformador dañado).
+\[
+    R1:\ P\lor S\lor T \qquad R2:\ \neg(P\land S) \qquad R3:\ T\Rightarrow P \qquad
+    KB = R1\land R2\land R3
+\]
+
+\paragraph{a) Tabla de verdad}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{ccc|ccc|c}
+\toprule
+$P$ & $S$ & $T$ & $R1$ & $R2$ & $R3$ & $KB$ (¿modelo?) \\
+\midrule
+V & V & V & V & F & V & F \\
+V & V & F & V & F & V & F \\
+V & F & V & V & V & V & \textbf{V (modelo $M_1$)} \\
+V & F & F & V & V & V & \textbf{V (modelo $M_2$)} \\
+F & V & V & V & V & F & F \\
+F & V & F & V & V & V & \textbf{V (modelo $M_3$)} \\
+F & F & V & V & V & F & F \\
+F & F & F & F & V & V & F \\
+\bottomrule
+\end{tabular}
+\caption{Tabla de verdad completa. $KB$ tiene exactamente tres modelos: $M_1=(V,F,V)$,
+$M_2=(V,F,F)$, $M_3=(F,V,F)$.}
+\end{table}
+
+\paragraph{b) $KB \models (P\lor S)$?}
+En $M_1$: $V\lor F = V$. En $M_2$: $V\lor F=V$. En $M_3$: $F\lor V=V$. Verdadera en los tres únicos
+modelos de $KB$ $\Rightarrow$ \textbf{$KB \models (P\lor S)$.}
+
+\paragraph{c) $KB \models S$?}
+En $M_1$ y $M_2$, $S=F$. \textbf{$KB \not\models S$}; contramodelo: $M_1=(P{=}V,S{=}F,T{=}V)$ (o
+$M_2$), donde $KB$ es verdadera pero $S$ es falsa.
+
+\paragraph{d) $KB \models \neg(S\land T)$?}
+$M_1$: $S\land T = F\land V=F\Rightarrow\neg(\cdot)=V$. $M_2$: $F\land F=F\Rightarrow V$. $M_3$:
+$V\land F=F\Rightarrow V$. Verdadera en los tres modelos $\Rightarrow$ \textbf{$KB \models
+\neg(S\land T)$.}
+
+\paragraph{e) $KB \models (P\lor T)$?}
+$M_1$: $V\lor V=V$. $M_2$: $V\lor F=V$. $M_3$: $F\lor F=\textbf{F}$. Como $M_3$ es un modelo de $KB$
+donde $P\lor T$ es falsa, \textbf{$KB \not\models (P\lor T)$}: el administrador \textbf{no tiene
+razón}. $M_3$ muestra que $P\lor T$ es \textbf{consistente} con $KB$ (verdadera en $M_1,M_2$) pero no
+está \textbf{implicada} por $KB$ (falla en $M_3$): consistencia solo exige un modelo testigo,
+mientras que implicación exige que se cumpla en \emph{todos} los modelos de $KB$, sin excepción.
+
+\subsection{Ejercicio 2: Café de especialidad en el Eje Cafetero}
+
+\[
+    R1:\ L\land H\Rightarrow P \qquad R2:\ A\land C\Rightarrow PE \qquad R3:\ P\land PE\Rightarrow CE
+\]
+\[
+    R4:\ CE\Rightarrow LE \qquad R5:\ L\land A\Rightarrow SO \qquad \text{Hechos: } L,A,C,H
+\]
+
+\paragraph{a) Grafo AND-OR}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  fact/.style={draw=black, thick, rectangle, rounded corners=1pt, inner sep=4pt, font=\small},
+  der/.style={draw=black, thick, rectangle, rounded corners=1pt, inner sep=4pt, font=\small}
+]
+\node[fact] (H)  at (0,0)    {$H$};
+\node[fact] (L)  at (2.5,0)  {$L$};
+\node[fact] (A)  at (5,0)    {$A$};
+\node[fact] (C)  at (7.5,0)  {$C$};
+
+\node[der] (P)   at (1.25,1.8) {$P$ (R1)};
+\node[der] (SO)  at (3.75,1.8) {$SO$ (R5)};
+\node[der] (PE)  at (6.25,1.8) {$PE$ (R2)};
+
+\node[der] (CE)  at (3.75,3.6) {$CE$ (R3)};
+\node[der] (LE)  at (3.75,5.4) {$LE$ (R4)};
+
+\draw[-{Latex},thick] (H) -- (P);
+\draw[-{Latex},thick] (L) -- (P);
+\draw[-{Latex},thick] (L) -- (SO);
+\draw[-{Latex},thick] (A) -- (SO);
+\draw[-{Latex},thick] (A) -- (PE);
+\draw[-{Latex},thick] (C) -- (PE);
+\draw[-{Latex},thick] (P) -- (CE);
+\draw[-{Latex},thick] (PE) -- (CE);
+\draw[-{Latex},thick] (CE) -- (LE);
+\end{tikzpicture}
+\caption{Grafo AND-OR: los hechos $L,A,C,H$ están en la base; cada símbolo derivado agrupa (AND,
+implícito por la regla que lo produce) las premisas indicadas por los dos arcos que entran a él.
+Nótese que $SO$ no tiene ningún arco de salida: ninguna regla lo usa como premisa.}
+\end{figure}
+
+\paragraph{b) Traza de forward chaining (agenda FIFO, orden inicial $L,A,C,H$)}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{clll}
+\toprule
+Paso & Símbolo procesado & Regla que dispara (cuenta a 0) & Agenda al final del paso \\
+\midrule
+1 & $L$  & — (decrementa R1: 2$\to$1; R5: 2$\to$1) & $[A,C,H]$ \\
+2 & $A$  & R5 dispara $\to$ agrega $SO$ (decrementa R2: 2$\to$1) & $[C,H,SO]$ \\
+3 & $C$  & R2 dispara $\to$ agrega $PE$ & $[H,SO,PE]$ \\
+4 & $H$  & R1 dispara $\to$ agrega $P$ & $[SO,PE,P]$ \\
+5 & $SO$ & — ($SO$ no es premisa de ninguna regla) & $[PE,P]$ \\
+6 & $PE$ & — (decrementa R3: 2$\to$1) & $[P]$ \\
+7 & $P$  & R3 dispara $\to$ agrega $CE$ & $[CE]$ \\
+8 & $CE$ & R4 dispara $\to$ agrega $LE$ & $[LE]$ \\
+9 & $LE$ & \textbf{es la consulta} $\to$ se retorna verdadero & $[\,]$ \\
+\bottomrule
+\end{tabular}
+\caption{Traza completa de PL-FC-ENTAILS? para la consulta $LE$.}
+\end{table}
+
+\paragraph{c) ¿Se deriva $LE$?}
+\textbf{Sí.} El hecho derivado $SO$ (paso 2, vía R5: $L\land A\Rightarrow SO$) \textbf{no contribuye
+en nada} a probar $LE$: $SO$ no aparece en la premisa de ninguna regla, así que la cadena que lleva a
+$LE$ ($P,PE\to CE\to LE$) nunca lo utiliza.
+
+\paragraph{d) ¿Por qué se deriva un hecho irrelevante?}
+Forward chaining es \textbf{dirigido por los datos}: en cada paso dispara \emph{toda} regla cuyas
+premisas ya se satisfacen, sin usar información sobre cuál es la consulta. Como $L$ y $A$ (ya
+conocidos) satisfacen la premisa de R5 independientemente de que $SO$ sirva o no para responder
+$LE$, la regla se dispara igual. Esto refleja que el algoritmo es \textbf{sano y completo mirando
+hacia adelante}: deriva absolutamente todo lo que $KB$ implica, sin ningún mecanismo de poda por
+relevancia a una meta particular.
+
+\subsection{Ejercicio 3: La comparsa del Carnaval de Barranquilla}
+
+\[
+    R1:\ I\land E\Rightarrow H \qquad R2:\ H\land V\Rightarrow D \qquad R3:\ G\Rightarrow I \qquad
+    R4:\ B\Rightarrow I \qquad \text{Hechos: } B,E,V
+\]
+
+\paragraph{a) Árbol de prueba para la meta $D$}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  goal/.style={draw=black, thick, rectangle, rounded corners=1pt, inner sep=4pt, font=\small},
+  fact/.style={draw=black, thick, rectangle, rounded corners=1pt, inner sep=3pt, font=\small},
+  fail/.style={draw=black, thick, dashed, rectangle, rounded corners=1pt, inner sep=3pt, font=\small}
+]
+\node[goal] (D) at (3,5.2) {$D$ (R2)};
+\node[goal] (H) at (0.5,3.6) {$H$ (R1)};
+\node[fact] (V) at (5.5,3.6) {$V$ (hecho)};
+
+\node[goal] (I) at (-1,2) {$I$};
+\node[fact] (E) at (2,2) {$E$ (hecho)};
+
+\node[fail] (G) at (-2.5,0.4) {$G$: falla};
+\node[fact] (B) at (0.5,0.4) {$B$ (hecho, vía R4)};
+
+\draw[-{Latex},thick] (D) -- (H);
+\draw[-{Latex},thick] (D) -- (V);
+\draw[-{Latex},thick] (H) -- (I);
+\draw[-{Latex},thick] (H) -- (E);
+\draw[-{Latex},thick,dashed] (I) -- (G);
+\draw[-{Latex},thick] (I) -- (B);
+\end{tikzpicture}
+\caption{Árbol de prueba de backward chaining para $D$. El intento de probar $I$ vía R3 ($G\Rightarrow
+I$) falla (rama punteada: $G$ no es hecho ni cabeza de ninguna regla); se hace backtracking y R4
+($B\Rightarrow I$) rescata la prueba, ya que $B$ es un hecho.}
+\end{figure}
+
+\paragraph{b) Submeta con backtracking}
+El backtracking ocurre en la submeta \textbf{$I$}: como las reglas se intentan en el orden en que
+aparecen, primero se prueba \textbf{R3} ($G\Rightarrow I$), lo que exige probar $G$; pero $G$ no es
+un hecho ni es la conclusión de ninguna otra regla, así que esa rama \textbf{falla} sin alternativas.
+El algoritmo retrocede a la submeta $I$ y prueba la siguiente regla cuya cabeza es $I$: \textbf{R4}
+($B\Rightarrow I$), que exige probar $B$; como $B$ es un hecho, R4 \textbf{rescata la prueba} y $I$
+queda demostrado.
+
+\paragraph{c) Comparación con el Ejercicio 2}
+Forward chaining en el Ejercicio 2 derivó \textbf{5 hechos nuevos}: $SO, PE, P, CE, LE$ (a partir de
+los 4 hechos iniciales). Backward chaining aquí exploró \textbf{7 submetas}: $D, H, V, I, G, B, E$
+(una de ellas, $G$, es una rama fallida). Los números son comparables en este ejemplo pequeño, pero
+la diferencia cualitativa es la que importa:
+\begin{itemize}
+    \item \textbf{Dirigido por los datos} (forward chaining): parte de los hechos y aplica todas las
+    reglas disparables, sin mirar la meta; puede derivar información verdadera pero irrelevante
+    (como $SO$). Es preferible cuando \textbf{no hay una única meta fija} y se esperan muchas
+    consultas sobre la misma base (p. ej. un sistema de monitoreo que deriva conclusiones a medida
+    que llegan datos nuevos).
+    \item \textbf{Dirigido por la meta} (backward chaining): parte de la consulta y solo explora lo
+    que es relevante para probarla. Es preferible cuando la base de conocimiento es \textbf{grande}
+    pero solo una fracción pequeña es relevante para una consulta puntual (p. ej. sistemas expertos de
+    diagnóstico, o Prolog respondiendo una pregunta específica), aunque puede explorar y descartar
+    ramas fallidas (como $G$) antes de encontrar la regla correcta.
+\end{itemize}
+
+\subsection{Ejercicio 4: Estación de anillamiento en el páramo}
+
+\paragraph{a) Traducción a LPO}
+
+\begin{enumerate}
+    \item[a.1.] Todas las aves anilladas en Chingaza migran a Sumapaz:
+    \[
+        \forall x\ \big(Ave(x)\land Anillada(x,Chingaza)\big) \Rightarrow Migra(x,Sumapaz)
+    \]
+    \item[a.2.] Existe un ave anillada en Chingaza que cuida su propio nido:
+    \[
+        \exists x\ Ave(x)\land Anillada(x,Chingaza)\land Cuida(x,Nido(x))
+    \]
+    \item[a.3.] Ningún ave migra a la estación donde fue anillada:
+    \[
+        \forall x\,\forall e\ \big(Ave(x)\land Anillada(x,e)\big) \Rightarrow \neg Migra(x,e)
+    \]
+    \item[a.4.] Toda ave cuida al menos un nido:
+    \[
+        \forall x\ Ave(x) \Rightarrow \exists n\ Cuida(x,n)
+    \]
+\end{enumerate}
+
+\paragraph{b) Unificación}
+
+\begin{enumerate}
+    \item[b.1.] $Anillada(Colibri7,x)$ y $Anillada(y,Chingaza)$.\\
+    Posición 1: $Colibri7$ vs. $y$ $\Rightarrow y/Colibri7$. Posición 2: $x$ vs. $Chingaza$
+    $\Rightarrow x/Chingaza$.\\
+    \textbf{UMG:} $\theta=\{y/Colibri7,\ x/Chingaza\}$.
+
+    \item[b.2.] $Migra(x,Nido(x))$ y $Migra(Paramuna3,y)$.\\
+    Posición 1: $x$ vs. $Paramuna3$ $\Rightarrow x/Paramuna3$ (occurs check: $x$ no ocurre en
+    $Paramuna3$, correcto). Aplicando $\theta_1$, posición 2: $Nido(Paramuna3)$ vs. $y$
+    $\Rightarrow y/Nido(Paramuna3)$ (occurs check: $y$ no ocurre en $Nido(Paramuna3)$).\\
+    \textbf{UMG:} $\theta=\{x/Paramuna3,\ y/Nido(Paramuna3)\}$.
+
+    \item[b.3.] $Vecina(Nido(x),x)$ y $Vecina(y,Chingaza)$.\\
+    Posición 1: $Nido(x)$ vs. $y$ $\Rightarrow y/Nido(x)$ (occurs check: $y\neq x$, no hay
+    ocurrencia). Posición 2: $x$ vs. $Chingaza \Rightarrow x/Chingaza$. Componiendo (se sustituye
+    $x$ dentro de la ligadura de $y$): $y/Nido(Chingaza)$.\\
+    \textbf{UMG:} $\theta=\{x/Chingaza,\ y/Nido(Chingaza)\}$. Verificación:
+    $Vecina(Nido(Chingaza),Chingaza)$ en ambos lados.
+
+    \item[b.4.] $Anillada(Colibri7,Chingaza)$ y $Anillada(Colibri7,Sumapaz)$.\\
+    Posición 1: $Colibri7$ vs. $Colibri7$ (coincide). Posición 2: $Chingaza$ vs. $Sumapaz$: dos
+    \textbf{constantes distintas}.\\
+    \textbf{No se pueden unificar}: la unificación falla porque no existe sustitución que iguale dos
+    constantes diferentes.
+
+    \item[b.5.] $Cuida(x,Nido(x))$ y $Cuida(Nido(y),y)$.\\
+    Posición 1: $x$ vs. $Nido(y)$ $\Rightarrow$ occurs check sobre $x$: $x$ no aparece en $Nido(y)$
+    (solo aparece $y$), así que \emph{a priori} pasa: $\theta_1=\{x/Nido(y)\}$. Aplicando $\theta_1$
+    a la posición 2: $Nido(x)$ se convierte en $Nido(Nido(y))$, que debe unificarse con $y$.
+    Posición 2: $Nido(Nido(y))$ vs. $y$ $\Rightarrow$ se intentaría $y/Nido(Nido(y))$, pero
+    \textbf{$y$ ocurre dentro de $Nido(Nido(y))$}.\\
+    \textbf{No se pueden unificar}: el occurs check falla en la segunda posición (ligar $y$ a un
+    término que contiene a $y$ generaría el término infinito $y=Nido(Nido(y))=Nido(Nido(Nido(y)))
+    =\cdots$).
+\end{enumerate}
+
+\paragraph{c) Occurs check}
+El \textbf{occurs check} es el paso del algoritmo de unificación que, antes de ligar una variable $v$
+a un término $t$, verifica que $v$ \textbf{no aparezca dentro de} $t$. De los pares anteriores, solo
+\textbf{b.5} lo requiere (y falla por su causa): al intentar ligar $y$ a $Nido(Nido(y))$ se crearía
+un término circular/infinito, que no es un objeto válido en LPO (los términos deben ser finitos). Un
+motor de inferencia que omita el occurs check (como muchas implementaciones de Prolog, por razones de
+eficiencia) aceptaría esta unificación y construiría internamente una estructura de datos
+\textbf{cíclica}; esto puede producir inferencias incorrectas (dos términos que en realidad no
+denotan el mismo objeto se tratan como unificables) o hacer que el motor entre en un \textbf{bucle
+infinito} al intentar recorrer, imprimir o comparar ese término infinito.
+
+\subsection{Ejercicio 5: El caso de la pieza extraviada}
+
+\begin{align*}
+    &1.\ \forall x\ \big(TieneLlave(x)\land TurnoNocturno(x)\big) \Rightarrow Accede(x,Boveda)\\
+    &2.\ \forall x\,\forall y\ \big(Accede(x,Boveda)\land Registro(x,y)\big) \Rightarrow Movio(x,y)\\
+    &3.\ TieneLlave(Bruno) \qquad 4.\ TurnoNocturno(Bruno) \qquad 5.\ Registro(Bruno,Poporo)\\
+    &6.\ TieneLlave(Amparo) \qquad 7.\ TurnoNocturno(Celia) \qquad \alpha = \exists x\ Movio(x,Poporo)
+\end{align*}
+
+\paragraph{a) Forma clausal (variables estandarizadas)}
+
+\begin{align*}
+    C_1&:\ \neg TieneLlave(x_1) \lor \neg TurnoNocturno(x_1) \lor Accede(x_1,Boveda)\\
+    C_2&:\ \neg Accede(x_2,Boveda) \lor \neg Registro(x_2,y_2) \lor Movio(x_2,y_2)\\
+    C_3&:\ TieneLlave(Bruno) \qquad C_4:\ TurnoNocturno(Bruno) \qquad C_5:\ Registro(Bruno,Poporo)\\
+    C_6&:\ TieneLlave(Amparo) \qquad C_7:\ TurnoNocturno(Celia)
+\end{align*}
+Negación de la meta: $\neg\alpha = \neg\exists x\, Movio(x,Poporo) \equiv \forall x\,
+\neg Movio(x,Poporo)$, que en forma clausal (variable universal implícita, estandarizada como $x_3$)
+es
+\[
+    C_8:\ \neg Movio(x_3,Poporo).
+\]
+
+\paragraph{b) Refutación por resolución}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{clll}
+\toprule
+Paso & Cláusulas resueltas & MGU & Resolvente \\
+\midrule
+1 & $C_3$ con $C_1$ & $\{x_1/Bruno\}$ & $C_9:\ \neg TurnoNocturno(Bruno)\lor Accede(Bruno,Boveda)$\\
+2 & $C_4$ con $C_9$ & $\{\}$ (ya coincide en $Bruno$) & $C_{10}:\ Accede(Bruno,Boveda)$\\
+3 & $C_{10}$ con $C_2$ & $\{x_2/Bruno\}$ & $C_{11}:\ \neg Registro(Bruno,y_2)\lor Movio(Bruno,y_2)$\\
+4 & $C_5$ con $C_{11}$ & $\{y_2/Poporo\}$ & $C_{12}:\ Movio(Bruno,Poporo)$\\
+5 & $C_{12}$ con $C_8$ & $\{x_3/Bruno\}$ & $\square$ (cláusula vacía)\\
+\bottomrule
+\end{tabular}
+\caption{Refutación: se deriva $\square$ a partir de $KB \land \neg\alpha$.}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  clause/.style={draw=black, thick, rectangle, rounded corners=1pt, inner sep=3pt, font=\scriptsize,
+  align=center, text width=3.4cm}
+]
+\node[clause] (C3)  at (0,0)     {$C_3$: $TieneLlave(Bruno)$};
+\node[clause] (C1)  at (3.6,0)   {$C_1$: $\neg TieneLlave(x_1)\lor\neg TurnoNocturno(x_1)\lor
+Accede(x_1,Boveda)$};
+\node[clause] (C9)  at (1.8,-2)  {$C_9$: $\neg TurnoNocturno(Bruno)\lor Accede(Bruno,Boveda)$};
+
+\node[clause] (C4)  at (5.2,-2)  {$C_4$: $TurnoNocturno(Bruno)$};
+\node[clause] (C10) at (3.5,-4)  {$C_{10}$: $Accede(Bruno,Boveda)$};
+
+\node[clause] (C2)  at (6.9,-4)  {$C_2$: $\neg Accede(x_2,Boveda)\lor\neg Registro(x_2,y_2)\lor
+Movio(x_2,y_2)$};
+\node[clause] (C11) at (5.2,-6)  {$C_{11}$: $\neg Registro(Bruno,y_2)\lor Movio(Bruno,y_2)$};
+
+\node[clause] (C5)  at (8.6,-6)  {$C_5$: $Registro(Bruno,Poporo)$};
+\node[clause] (C12) at (6.9,-8)  {$C_{12}$: $Movio(Bruno,Poporo)$};
+
+\node[clause] (C8)  at (10.3,-8) {$C_8$: $\neg Movio(x_3,Poporo)$};
+\node[clause] (NIL) at (8.6,-10) {$\square$};
+
+\draw[-{Latex},thick] (C3)  -- (C9);
+\draw[-{Latex},thick] (C1)  -- (C9);
+\draw[-{Latex},thick] (C9)  -- (C10);
+\draw[-{Latex},thick] (C4)  -- (C10);
+\draw[-{Latex},thick] (C10) -- (C11);
+\draw[-{Latex},thick] (C2)  -- (C11);
+\draw[-{Latex},thick] (C11) -- (C12);
+\draw[-{Latex},thick] (C5)  -- (C12);
+\draw[-{Latex},thick] (C12) -- (NIL);
+\draw[-{Latex},thick] (C8)  -- (NIL);
+\end{tikzpicture}
+\caption{Árbol de refutación completo: cada resolvente combina los dos nodos que apuntan hacia él,
+hasta llegar a $\square$.}
+\end{figure}
+
+\paragraph{c) Extracción de la respuesta}
+La variable existencial de la meta original ($x$ en $\exists x\,Movio(x,Poporo)$) se estandarizó como
+$x_3$ en $C_8$. Acumulando las sustituciones a lo largo de la refutación, $x_3$ termina ligada a
+$Bruno$ (paso 5). \textbf{Respuesta: Bruno movió el poporo.}
+
+\paragraph{d) Por qué Amparo y Celia no cierran una refutación alternativa}
+\begin{itemize}
+    \item \textbf{Amparo} ($C_6$: $TieneLlave(Amparo)$): resolviendo con $C_1$ ($x_1/Amparo$) se
+    obtiene
+    \[
+        \neg TurnoNocturno(Amparo)\lor Accede(Amparo,Boveda).
+    \]
+    Para continuar haría falta resolver el literal $\neg TurnoNocturno(Amparo)$ contra una cláusula
+    unitaria $TurnoNocturno(Amparo)$, pero esa cláusula \textbf{no existe} en la KB (el enunciado
+    aclara que Amparo no estuvo en el turno nocturno): la cadena se detiene ahí.
+
+    \item \textbf{Celia} ($C_7$: $TurnoNocturno(Celia)$): resolviendo con $C_1$ ($x_1/Celia$) se
+    obtiene
+    \[
+        \neg TieneLlave(Celia)\lor Accede(Celia,Boveda).
+    \]
+    Aquí falta una cláusula unitaria $TieneLlave(Celia)$ para resolver $\neg TieneLlave(Celia)$;
+    tampoco existe (el enunciado aclara que Celia no tiene llave). Igual que con Amparo, no hay
+    literal complementario que unifique.
+
+    \item Incluso si, hipotéticamente, se lograra derivar $Accede(Amparo,Boveda)$ o
+    $Accede(Celia,Boveda)$, el segundo paso exigiría resolver contra $C_2$ y luego necesitaría una
+    cláusula $Registro(Amparo,y)$ o $Registro(Celia,y)$ para producir $Movio$; la única cláusula
+    $Registro$ de la KB es $Registro(Bruno,Poporo)$, así que tampoco hay unificador posible ahí.
+\end{itemize}
+
+\paragraph{e) ¿Por qué probar $KB\land\neg\alpha$ insatisfacible en vez de derivar $\alpha$
+directamente?}
+Probar $KB\models\alpha$ ``directamente'' exigiría verificar que $\alpha$ es verdadera en \emph{todo}
+modelo de $KB$ —en LPO, con dominios potencialmente infinitos, no hay forma de enumerar todos los
+modelos. La refutación invierte el problema: por el \textbf{teorema de refutación}
+($KB\models\alpha \Leftrightarrow KB\land\neg\alpha$ insatisfacible), basta con encontrar \emph{una}
+contradicción sintáctica finita (la cláusula vacía $\square$) para concluir que \textbf{ningún}
+modelo puede satisfacer $KB$ y $\neg\alpha$ a la vez, es decir, que todo modelo de $KB$ satisface
+$\alpha$. El principio que conecta ambas cosas es precisamente ese teorema de refutación, sustentado
+por el \textbf{teorema de completitud} de la resolución: convierte una pregunta semántica sobre
+\emph{todos los modelos} en una búsqueda sintáctica, finita y mecánicamente verificable, de una
+contradicción.
