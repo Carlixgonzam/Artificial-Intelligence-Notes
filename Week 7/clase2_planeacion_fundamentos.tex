@@ -1,22 +1,91 @@
-% Clase 2 — Planeación: Fundamentos
+% Clase 2 — Planeación Automatizada Pt 1: Fundamentos
 % Lectura: AIMA Secciones 11.1–11.2
 \section{Planeación: Definición y Algoritmos Generales}
 
-\subsection{¿Qué es la Planeación?}
+\subsection{¿Qué es la Planeación Clásica?}
 
-Un agente planificador construye una \textbf{secuencia de acciones} para lograr un objetivo en un entorno modelado.
-
-\begin{definition}[Problema de Planeación STRIPS/PDDL]
-\begin{itemize}
-    \item \textbf{Estado}: conjunción de fluentes (literales positivos/negativos).
-    \item \textbf{Acción}: definida por precondiciones y efectos.
-    \item \textbf{Meta}: conjunción de fluentes que deben ser verdaderos.
-\end{itemize}
+\begin{definition}[Planeación clásica]
+La \textbf{planeación clásica} es la tarea de hallar una secuencia de acciones que lleve a un agente
+desde un estado inicial hasta un estado que satisface una meta, en ambientes \textbf{discretos},
+\textbf{determinísticos}, \textbf{estáticos} y \textbf{completamente observables}.
 \end{definition}
 
-\subsection{Representación PDDL}
+\textbf{Aproximaciones previas y sus limitaciones:}
+\begin{itemize}
+    \item \textbf{Agente de solución de problemas} (búsqueda genérica): requiere una \textbf{función
+    heurística} diseñada a mano para cada nuevo dominio.
+    \item \textbf{Agente de lógica proposicional híbrido}: requiere codificar el problema completo
+    como sentencias proposicionales, con una \textbf{representación explícita} de un espacio de
+    estados que crece exponencialmente.
+\end{itemize}
 
-\begin{lstlisting}[language=, caption={Ejemplo de acción en PDDL}]
+\begin{example}[Por qué la representación importa: comprar libros en línea]
+Si se define una acción de compra distinta por cada código ISBN de 10 dígitos, un agente sin
+estructura de dominio debe considerar del orden de $10$ mil millones de acciones. Para comprar
+\emph{cuatro} libros distintos (meta $Tener(A)\land Tener(B)\land Tener(C)\land Tener(D)$), el número
+de planes de cuatro pasos a examinar sin explotar la estructura del problema es del orden de
+$10^{40}$. Sin embargo, un planificador que sepa que $Tener(c)\Rightarrow Comprar(c)$ es una regla
+\textbf{independiente por cada código} $c$ resuelve el problema de forma trivial. Esto motiva una
+representación \textbf{factorizada} e \textbf{independiente de dominio}: PDDL.
+\end{example}
+
+\subsection{PDDL: Representación de Estados}
+
+PDDL (\textit{Planning Domain Definition Language}) representa estados, acciones, metas y dominios de
+forma factorizada: los mismos algoritmos de planeación funcionan para cualquier problema descrito en
+PDDL, sin heurísticas ad hoc por dominio.
+
+\begin{definition}[Fluente atómico definido]
+Un \textbf{estado} se representa como una conjunción de \textbf{fluentes atómicos definidos}:
+\begin{itemize}
+    \item \textbf{Fluente}: un aspecto del mundo que puede cambiar con el tiempo.
+    \item \textbf{Atómico}: un único predicado aplicado a argumentos (no hay $\land$, $\lor$ ni
+    $\Rightarrow$ dentro del fluente mismo).
+    \item \textbf{Definido}: los argumentos son \textbf{constantes} (sin variables) y el fluente no
+    está negado.
+\end{itemize}
+Ejemplos válidos: $Pobre \land Desconocido$;\quad $En(Camion_1,Melbourne)\land En(Camion_2,Sydney)$.
+\textbf{No permitidos}: $En(x,y)$ (tiene variables), $\neg Pobre$ (tiene negación).
+\end{definition}
+
+PDDL usa una \textbf{base de datos semántica}: todo fluente que no aparece explícitamente en la
+descripción de un estado se asume \textbf{falso} (suposición de mundo cerrado), y constantes distintas
+(p. ej. $Camion_1$, $Camion_2$) se asumen objetos \textbf{distintos entre sí} (suposición de nombres
+únicos).
+
+\subsection{PDDL: Schema de Acción}
+
+\begin{definition}[Schema de acción]
+Un \textbf{schema de acción} representa toda una \textbf{familia} de acciones mediante variables. Sus
+elementos son: un \textbf{nombre}, una \textbf{lista de variables}, una \textbf{precondición} y un
+\textbf{efecto}, ambos conjunciones de literales (positivos o negativos).
+\end{definition}
+
+\textbf{Ejemplo (schema, con variables):}
+\[
+    \text{Acci\'on}(Volar(p,\,desde,\,hacia))
+\]
+\[
+    \textsc{Precond}:\ En(p,desde)\land Avi\acute{o}n(p)\land Aeropuerto(desde)\land
+    Aeropuerto(hacia)
+\]
+\[
+    \textsc{Efecto}:\ \neg En(p,desde)\land En(p,hacia)
+\]
+
+\textbf{La misma acción, instanciada con constantes:}
+\[
+    \text{Acci\'on}(Volar(P_1,\,SFO,\,JFK))
+\]
+\[
+    \textsc{Precond}:\ En(P_1,SFO)\land Avi\acute{o}n(P_1)\land Aeropuerto(SFO)\land
+    Aeropuerto(JFK)
+\]
+\[
+    \textsc{Efecto}:\ \neg En(P_1,SFO)\land En(P_1,JFK)
+\]
+
+\begin{lstlisting}[language=, caption={El mismo schema de acción en PDDL}]
 (:action Fly
  :parameters (?p - Plane ?from ?to - Airport)
  :precondition (and (At ?p ?from) (Plane ?p)
@@ -24,10 +93,324 @@ Un agente planificador construye una \textbf{secuencia de acciones} para lograr 
  :effect (and (At ?p ?to) (not (At ?p ?from))))
 \end{lstlisting}
 
-\subsection{Algoritmos de Búsqueda para Planeación}
+\begin{definition}[Acción aplicable y RESULTADO]
+Una acción $a$ es \textbf{aplicable} en un estado $s$ si cada literal positivo de su precondición
+está en $s$ y ningún literal negado de su precondición está en $s$ (equivalentemente: la precondición
+se determina unificando sus literales con los fluentes de $s$, sustituyendo variables por
+constantes). El estado resultante de ejecutar $a$ en $s$ es
+\[
+    \textsc{Resultado}(s,a) \;=\; (s - \textsc{Del}(a)) \,\cup\, \textsc{Add}(a),
+\]
+donde $\textsc{Del}(a)$ son los fluentes que aparecen como literales \textbf{negados} en el efecto de
+$a$ (se eliminan de $s$) y $\textsc{Add}(a)$ son los que aparecen como literales \textbf{positivos}
+(se añaden a $s$).
+\end{definition}
+
+Un \textbf{dominio de planeación} es un conjunto de schemas de acción. Un \textbf{problema}
+específico en ese dominio agrega un \textbf{estado inicial} ($\textsc{Iniciar}$, conjunción de
+fluentes definidos) y una \textbf{meta} ($\textsc{Objetivo}$, conjunción de literales positivos o
+negativos que \emph{sí} puede contener variables, interpretadas existencialmente): por ejemplo,
+$\textsc{Objetivo}(En(C_1,SFO)\land\neg En(C_2,SFO)\land En(p,SFO))$ se satisface con cualquier avión
+$p$ que esté en SFO, siempre que $C_1$ esté en SFO y $C_2$ no lo esté.
+
+\subsection{Ejemplos de Dominios Clásicos}
+
+\paragraph{Transporte de carga aérea.} Predicados: $En(c,p)$ (el cargo $c$ está dentro del avión
+$p$), $En(x,a)$ (el objeto $x$ está en el aeropuerto $a$), $Dentro(c,p)$. Como PDDL no cuenta con un
+cuantificador universal para expresar ``todo el cargo dentro del avión viaja con él'', la estrategia
+es que un cargo \textbf{deja de estar} en su aeropuerto ($En$) mientras está dentro de un avión, y
+solo vuelve a tener una ubicación ($En$) en el aeropuerto de destino.
+\[
+    \text{Acci\'on}(Cargar(c,p,a))
+\]
+\[
+    \textsc{Precond}:\ En(c,a)\land En(p,a)\land Cargo(c)\land Avi\acute{o}n(p)\land Aeropuerto(a)
+\]
+\[
+    \textsc{Efecto}:\ \neg En(c,a)\land Dentro(c,p)
+\]
+\[
+    \text{Acci\'on}(Descargar(c,p,a))
+\]
+\[
+    \textsc{Precond}:\ Dentro(c,p)\land En(p,a)\land Cargo(c)\land Avi\acute{o}n(p)\land
+    Aeropuerto(a)
+\]
+\[
+    \textsc{Efecto}:\ En(c,a)\land \neg Dentro(c,p)
+\]
+Con el siguiente estado inicial:
+\[
+    \textsc{Iniciar}(En(C_1,SFO)\land En(C_2,JFK)\land En(P_1,SFO)\land En(P_2,JFK)
+\]
+\[
+    \land\ Cargo(C_1)\land Cargo(C_2)\land Avi\acute{o}n(P_1)\land Avi\acute{o}n(P_2)\land
+    Aeropuerto(JFK)\land Aeropuerto(SFO))
+\]
+y la siguiente meta:
+\[
+    \textsc{Objetivo}(En(C_1,JFK)\land En(C_2,SFO))
+\]
+una solución es
+\[
+    [Cargar(C_1,P_1,SFO),\ Volar(P_1,SFO,JFK),\ Descargar(C_1,P_1,JFK),
+\]
+\[
+    \phantom{[}Cargar(C_2,P_2,JFK),\ Volar(P_2,JFK,SFO),\ Descargar(C_2,P_2,SFO)].
+\]
+
+\paragraph{Neumático de repuesto.} Acciones $Quitar(x,y)$ (quitar el objeto $x$ de $y$),
+$Colocar(x,y)$, y $DejarDeNoche$: sin precondiciones, con el efecto de \textbf{borrar} todo lo que se
+sabía sobre la ubicación de las ruedas, modelando que en un barrio peligroso las llantas pueden
+desaparecer si el carro queda sin vigilancia.
+\[
+    \text{Acci\'on}(Quitar(Repuesto,Maletero)),\quad \textsc{Precond}:\ En(Repuesto,Maletero)
+\]
+\[
+    \textsc{Efecto}:\ \neg En(Repuesto,Maletero)\land En(Repuesto,Suelo)
+\]
+\[
+    \text{Acci\'on}(Colocar(Repuesto,Eje)),\quad \textsc{Precond}:\ En(Repuesto,Suelo)\land
+    \neg En(Deshinchada,Eje)
+\]
+\[
+    \textsc{Efecto}:\ \neg En(Repuesto,Suelo)\land En(Repuesto,Eje)
+\]
+Con el siguiente estado inicial y meta:
+\[
+    \textsc{Iniciar}(En(Deshinchada,Eje)\land En(Repuesto,Maletero))
+\]
+\[
+    \textsc{Objetivo}(En(Repuesto,Eje))
+\]
+una solución es
+\[
+    [Quitar(Repuesto,Maletero),\ Quitar(Deshinchada,Eje),\ Colocar(Repuesto,Eje)].
+\]
+
+\paragraph{Mundo de bloques.} Predicados: $Sobre(b,x)$ (el bloque $b$ está sobre $x$, que puede ser
+otro bloque o la mesa), $Despejar(b)$ (no hay ningún bloque sobre $b$), $Bloque(b)$. Una sola acción
+$Mover(b,x,y)$ no basta: al mover el \emph{último} bloque de una pila hacia la mesa no hay ningún
+bloque $y$ concreto que reciba el efecto $Despejar(y)$, así que PDDL usa una segunda acción dedicada,
+$MoverSobreTablero(b,x)$, para mover un bloque directamente a la mesa.
+\[
+    \text{Acci\'on}(Mover(b,x,y))
+\]
+\[
+    \textsc{Precond}:\ Sobre(b,x)\land Despejar(b)\land Despejar(y)\land Bloque(b)\land
+    (b\neq x)\land (b\neq y)\land (x\neq y)
+\]
+\[
+    \textsc{Efecto}:\ Sobre(b,y)\land Despejar(x)\land \neg Sobre(b,x)\land \neg Despejar(y)
+\]
+\[
+    \text{Acci\'on}(MoverSobreTablero(b,x))
+\]
+\[
+    \textsc{Precond}:\ Sobre(b,x)\land Despejar(b)\land Bloque(b)\land (b\neq x)
+\]
+\[
+    \textsc{Efecto}:\ Sobre(b,Mesa)\land Despejar(x)\land \neg Sobre(b,x)
+\]
+Con el siguiente estado inicial:
+\[
+    \textsc{Iniciar}(Sobre(A,Mesa)\land Sobre(B,Mesa)\land Sobre(C,Mesa)
+\]
+\[
+    \land\ Bloque(A)\land Bloque(B)\land Bloque(C)\land Despejar(A)\land Despejar(B)\land
+    Despejar(C))
+\]
+y la siguiente meta:
+\[
+    \textsc{Objetivo}(Sobre(A,B)\land Sobre(B,C))
+\]
+una solución de dos pasos es $[Mover(B,Mesa,C),\ Mover(A,Mesa,B)]$.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  block/.style={draw=black, thick, rectangle, minimum width=1.1cm, minimum height=1.1cm, font=\bfseries}
+]
+\draw[thick] (-0.7,0) -- (3.2,0);
+\node[block] (A0) at (0,0.55)   {A};
+\node[block] (B0) at (1.3,0.55) {B};
+\node[block] (C0) at (2.6,0.55) {C};
+\node at (1.3,-0.55) {Estado inicial};
+
+\draw[thick] (5.3,0) -- (7.7,0);
+\node[block] (C1) at (6.5,0.55) {C};
+\node[block] (B1) at (6.5,1.65) {B};
+\node[block] (A1) at (6.5,2.75) {A};
+\node at (6.5,-0.55) {Estado meta};
+\end{tikzpicture}
+\caption{Mundo de bloques: en el estado inicial $A$, $B$ y $C$ están cada uno directamente sobre la
+mesa; la meta apila $A$ sobre $B$ sobre $C$. La solución $[Mover(B,Mesa,C),\ Mover(A,Mesa,B)]$ primero
+coloca $B$ sobre $C$ y luego $A$ sobre $B$.}
+\end{figure}
+
+\subsection{Búsqueda hacia Adelante en el Espacio de Estados (Progresión)}
+
+La \textbf{planeación de progresión} aplica los algoritmos de búsqueda genéricos (Cap. 3--4)
+directamente sobre PDDL: parte del estado inicial (conjunto de literales positivos, con suposición de
+mundo cerrado) y en cada estado $s$ genera $\textsc{Acciones}(s)$ unificando las precondiciones de
+cada schema con los fluentes de $s$, sustituyendo variables por las constantes que hacen coincidir la
+unificación (instanciación definida).
 
 \begin{itemize}
-    \item \textbf{Búsqueda hacia adelante} (\textit{progression}): empieza en el estado inicial y aplica acciones.
-    \item \textbf{Búsqueda hacia atrás} (\textit{regression}): empieza desde la meta y aplica acciones inversas.
-    \item \textbf{SATPLAN}: codifica el problema de planeación como SAT y usa un solucionador SAT.
+    \item \textbf{Problema:} un schema con varios literales en su precondición puede unificar de
+    \emph{muchas} formas distintas. En el dominio del neumático, la precondición $En(obj,loc)$ de
+    $Quitar$ unifica tanto con $\{obj/Deshinchada,\ loc/Eje\}$ como con
+    $\{obj/Repuesto,\ loc/Maletero\}$, generando ramas adicionales por cada instanciación posible.
+    \item \textbf{Ejemplo de escala (carga aérea):} con 10 aeropuertos, 5 aviones y 20 piezas de
+    cargo por aeropuerto (50 aviones y 200 cargas en total, cada avión puede volar a 9 aeropuertos y
+    cada carga puede cargarse/descargarse), hay entre 450 y 10.450 acciones aplicables por estado
+    ($\approx 2000$ en promedio). La meta de mover toda la carga de un aeropuerto a otro requiere una
+    solución de \textbf{41 pasos}, lo que da un árbol de búsqueda de hasta $2000^{41}$ nodos: la
+    búsqueda ciega es completamente inviable, y motiva las \textbf{heurísticas independientes de
+    dominio} de la Clase 3.
 \end{itemize}
+
+\subsection{Búsqueda hacia Atrás en el Espacio de Estados (Regresión)}
+
+La \textbf{planeación de regresión} parte de la meta y aplica acciones ``hacia atrás'' hasta llegar a
+un estado que coincide con el inicial, considerando en cada paso únicamente las \textbf{acciones
+relevantes}.
+
+\begin{definition}[Acción relevante]
+Una acción $a$ es \textbf{relevante} para una meta $g$ si el efecto de $a$ unifica con \emph{al
+menos un} literal de $g$, \textbf{sin negar ninguna otra parte} de $g$.
+\end{definition}
+
+\textbf{Ejemplo:} con meta $\neg Pobre \land Famoso$, una acción con efecto $Famoso$ es relevante.
+Una acción con efecto $Pobre \land Famoso$ \textbf{no} es relevante --aunque también produzca
+$Famoso$-- porque su efecto haría verdadero $Pobre$, contradiciendo $\neg Pobre$ en la meta.
+
+Dada una meta $g$ y una acción relevante $a$, la \textbf{regresión} de $g$ sobre $a$ produce una nueva
+meta (estado predecesor) $g'$:
+\[
+    \textsc{Pos}(g') = \big(\textsc{Pos}(g) - \textsc{Add}(a)\big) \cup \textsc{Pos}(\textsc{Precond}(a))
+\]
+\[
+    \textsc{Neg}(g') = \big(\textsc{Neg}(g) - \textsc{Del}(a)\big) \cup \textsc{Neg}(\textsc{Precond}(a))
+\]
+Intuición: los literales que $a$ ya garantiza se \textbf{remueven} de la meta (ya quedarán
+satisfechos al ejecutar $a$), y se \textbf{añaden} las precondiciones de $a$, porque deben cumplirse
+\emph{antes} de ejecutarla --si no, $a$ no podría haberse ejecutado.
+
+\textbf{Ejemplo:} meta $En(C_2,SFO)$, schema $Descargar$ con efecto $En(c,a)$. Unificando el objetivo
+con el efecto se obtiene $\theta=\{c/C_2,\ a/SFO\}$; tras estandarizar $p\to p'$:
+\[
+    \text{Acci\'on}(Descargar(C_2,p',SFO))
+\]
+\[
+    \textsc{Precond}:\ Dentro(C_2,p')\land En(p',SFO)\land Cargo(C_2)\land Avi\acute{o}n(p')\land
+    Aeropuerto(SFO)
+\]
+\[
+    \textsc{Efecto}:\ En(C_2,SFO)\land \neg Dentro(C_2,p')
+\]
+La nueva meta (estado predecesor) es
+\[
+    g' = Dentro(C_2,p')\land En(p',SFO)\land Cargo(C_2)\land Avi\acute{o}n(p')\land
+    Aeropuerto(SFO).
+\]
+
+\textbf{Comparación con la búsqueda hacia adelante:} suponga la meta $Tener(9780134610993)$ con el
+schema $\text{Acci\'on}(Comprar(i))$, $\textsc{Precond}:\ ISBN(i)$, $\textsc{Efecto}:\ Tener(i)$. Sin
+heurística, la búsqueda hacia \textbf{adelante} tendría que enumerar del orden de $10$ mil millones de
+acciones $Comprar$ definidas para encontrar la correcta. La búsqueda hacia \textbf{atrás} solo unifica
+la meta con el efecto ($\theta=\{i'/9780134610993\}$) y obtiene el estado predecesor directamente en
+un paso: $ISBN(9780134610993)$. Esto ilustra por qué la regresión suele ser más eficiente cuando la
+meta es específica y el espacio de acciones aplicables hacia adelante es enorme.
+
+\subsection{Planeación como Satisfacibilidad Booleana (SATPLAN)}
+
+\textbf{Estrategia:} fijar un horizonte de tiempo $T$ y codificar \emph{todo} el problema de
+planeación (con ese horizonte) como una única fórmula proposicional grande, que se entrega a un
+solucionador SAT; un modelo satisfactible codifica un plan válido.
+
+\begin{enumerate}
+    \item \textbf{Proposicionalizar las acciones:} por cada schema, sustituir sus variables por
+    constantes y añadir un superíndice de tiempo $t$: p. ej. $VolarP_1SFOJFK^1$.
+    \item \textbf{Axiomas de exclusión de acciones:} para cada par de acciones que no pueden ocurrir
+    simultáneamente,
+    \[
+        \neg\big(VolarP_1SFOJFK^1 \land VolarP_1SFOBUH^1\big)
+    \]
+    (el mismo avión no puede volar a dos destinos distintos en el mismo paso de tiempo).
+    \item \textbf{Axiomas de precondición:} por cada acción definida $A^t$,
+    \[
+        A^t \Rightarrow \textsc{Pre}(A)^t
+    \]
+    (si la acción ocurrió en el tiempo $t$, sus precondiciones eran verdaderas en $t$). Por ejemplo,
+    $VolarP_1SFOJFK^1 \Rightarrow En(P_1,SFO)^1\land Avi\acute{o}n(P_1)^1\land Aeropuerto(SFO)^1\land
+    Aeropuerto(JFK)^1$.
+    \item \textbf{Axiomas de estado sucesor:} por cada fluente $F$,
+    \[
+        F^{t+1} \Leftrightarrow \textsc{AccionCausaF}^t \lor \big(F^t \land
+        \neg\textsc{AccionCausaNoF}^t\big),
+    \]
+    donde $\textsc{AccionCausaF}$ es la disyunción de todas las acciones definidas que
+    \textbf{añaden} $F$, y $\textsc{AccionCausaNoF}$ la disyunción de las que lo \textbf{eliminan}.
+    \item \textbf{Estado inicial:} se asevera $F^0$ por cada fluente verdadero en el problema
+    inicial, y $\neg F^0$ por cada fluente no mencionado.
+    \item \textbf{Meta proposicionalizada:} disyunción sobre todas las instancias definidas donde las
+    variables de la meta se reemplazan por constantes. Por ejemplo, la meta $En(A,x)\land Bloque(x)$
+    con objetos $A,B,C$ se convierte en
+    \[
+        \big(En(A,A)\land Bloque(A)\big) \lor \big(En(A,B)\land Bloque(B)\big) \lor
+        \big(En(A,C)\land Bloque(C)\big).
+    \]
+\end{enumerate}
+
+\subsection{Otras Estrategias de Planeación}
+
+\begin{itemize}
+    \item \textbf{Grafo de planeación:} estructura de capas alternadas de literales y acciones
+    ($S_0, A_0, S_1, A_1,\ldots$) que se construye en tiempo polinomial y acota qué literales son
+    alcanzables en cuántos pasos. Se retoma en la \textbf{Clase 3} como base de la heurística FF y de
+    las heurísticas de planeación en general.
+    \item \textbf{Cálculo situacional} (\textit{situation calculus}): representa la planeación
+    directamente en LPO mediante un término $do(a,s)$ que denota el estado resultante de ejecutar la
+    acción $a$ en la situación $s$ (p. ej. $do(Move(rob,o109,o103),\,init)$). Permite razonar con todo
+    el aparato de LPO (cuantificadores, igualdad, teoría de conjuntos), a costa de perder la
+    estructura factorizada --y por tanto buena parte de la eficiencia-- que ofrece PDDL.
+    \item \textbf{Planeación de orden parcial (POP):} en vez de comprometerse con un \textbf{orden
+    total y rígido} entre las acciones del plan (\textit{fixed order}), POP solo impone las
+    restricciones de orden estrictamente necesarias (\textit{least commitment}), dejando sin ordenar
+    entre sí las acciones que no dependen una de otra.
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  act/.style={draw=black, thick, rectangle, rounded corners=1pt, minimum width=2.1cm, inner sep=3pt, font=\small}
+]
+\node[act] (F1) at (0,0)    {Acción 1};
+\node[act] (F2) at (0,-1.2) {Acción 2};
+\node[act] (F3) at (0,-2.4) {Acción 3};
+\node[act] (F4) at (0,-3.6) {Acción 4};
+\draw[-{Latex},thick] (F1) -- (F2);
+\draw[-{Latex},thick] (F2) -- (F3);
+\draw[-{Latex},thick] (F3) -- (F4);
+\node at (0,0.9) {\textbf{Orden fijo}};
+
+\node[act] (S)  at (6,0.3)    {Inicio};
+\node[act] (A)  at (4.7,-1.2) {Acción A};
+\node[act] (B)  at (7.3,-1.2) {Acción B};
+\node[act] (C)  at (4.7,-2.4) {Acción C};
+\node[act] (D)  at (7.3,-2.4) {Acción D};
+\node[act] (G)  at (6,-3.6)   {Meta};
+\draw[-{Latex},thick] (S) -- (A);
+\draw[-{Latex},thick] (S) -- (B);
+\draw[-{Latex},thick] (A) -- (C);
+\draw[-{Latex},thick] (B) -- (D);
+\draw[-{Latex},thick] (C) -- (G);
+\draw[-{Latex},thick] (D) -- (G);
+\node at (6,0.9) {\textbf{Orden parcial (POP)}};
+\end{tikzpicture}
+\caption{Orden fijo vs. orden parcial: en el plan de orden fijo cada acción depende rígidamente de la
+anterior; en POP, las acciones A/B (y C/D) son mutuamente independientes y solo se ordenan respecto a
+lo que sí exigen sus dependencias reales, dejando margen para ejecutarlas en cualquier orden entre sí
+o en paralelo.}
+\end{figure}
