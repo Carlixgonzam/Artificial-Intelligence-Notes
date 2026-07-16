@@ -1,29 +1,633 @@
-% Clase 3 — Planeación: Heurísticas y Planeación Jerárquica
+% Clase 3 — Planeación Automatizada Pt 2: Heurísticas y Planeación Jerárquica
 % Lectura: AIMA Secciones 11.3–11.4
 \section{Planeación: Heurísticas y Planeación Jerárquica}
 
-\subsection{Heurísticas para Planeación}
+La Clase 2 mostró que la búsqueda ciega sobre PDDL no escala (hasta $2000^{41}$ nodos en el ejemplo
+de carga aérea). Esta clase repasa qué hace admisible a una heurística y luego construye
+heurísticas \textbf{independientes de dominio} para planeación por relajación del problema, un
+conjunto de técnicas de \textbf{podado independiente de dominio}, y finalmente la
+\textbf{planeación jerárquica (HTN)}, que ataca el problema de escala organizando acciones en
+niveles de abstracción en vez de heurísticas.
 
-\subsubsection{Problema Relajado (ignore preconditions / ignore delete lists)}
+\subsection{Repaso: Admisibilidad y Monotonicidad de Heurísticas}
+
+\begin{definition}[Heurística]
+Una \textbf{heurística} $h(n)$ es una función que estima qué tan cerca está un estado (nodo $n$) de
+la meta, y sirve para guiar la búsqueda hacia el camino con mayor promesa. Ejemplos clásicos:
+distancia Manhattan, distancia euclidiana.
+\end{definition}
+
+Evaluar una heurística no es solo verificar que \emph{encuentre} una solución, sino que encuentre el
+\textbf{camino más corto}. Tres preguntas clave:
 \begin{itemize}
-    \item \textbf{Ignore preconditions}: todas las acciones son aplicables. Heurística: número mínimo de acciones para satisfacer la meta.
-    \item \textbf{Ignore delete lists}: no se eliminan fluentes. Problema de planeación relajado resoluble en tiempo polinomial.
+    \item \textbf{Admisibilidad:} ¿la heurística nunca sobrestima el costo real? Formalmente,
+    \[
+        0 \le h(n) \le h^*(n),
+    \]
+    donde $h^*(n)$ es el costo real óptimo desde $n$ hasta la meta. Una heurística admisible
+    garantiza encontrar el camino más corto (cuando existe solución).
+    \item \textbf{Informedness:} dadas dos heurísticas admisibles, ¿cuál domina a la otra (da
+    estimados más ajustados, y por tanto expande menos nodos)?
+    \item \textbf{Monotonicidad / consistencia:} si ya se expandió un estado, ¿se garantiza que no se
+    va a encontrar el mismo estado después por un camino más corto? Una heurística es
+    \textbf{consistente} si, para todo nodo $n_i$ y sucesor $n_j$ alcanzado con una acción de costo
+    $\textsc{Costo}(n_i,n_j)$,
+    \[
+        h(n_i) - h(n_j) \;\le\; \textsc{Costo}(n_i,n_j).
+    \]
 \end{itemize}
 
-\subsubsection{Planning Graph y Heurística FF}
+\subsection{Heurísticas en Planeación: Relajación de Problemas}
+
+\textbf{Diferencia clave frente a búsqueda genérica:} en planeación, las heurísticas pueden
+construirse de forma \textbf{independiente del dominio}, porque PDDL ya factoriza el problema en
+fluentes y schemas de acción --no hace falta que un experto diseñe la heurística a mano para cada
+dominio nuevo.
+
+Un problema de búsqueda se modela como un grafo: nodos = estados, arcos = acciones, objetivo =
+estado meta. La estrategia general es la \textbf{relajación}: construir una versión más fácil del
+problema cuyo costo exacto (o una aproximación de él) sirve como heurística admisible para el
+problema original. Dos formas de relajar:
+\begin{itemize}
+    \item \textbf{Agregar más arcos al grafo} (permitir más transiciones entre estados) --heurística
+    de ignorar precondiciones.
+    \item \textbf{Agrupar múltiples nodos} en uno solo (menos estados) --abstracción de estado.
+\end{itemize}
+
+\subsection{Heurística de Ignorar Precondiciones}
+
+\begin{definition}[Ignorar precondiciones]
+Se remueven todas las precondiciones de las acciones: toda acción queda aplicable en cualquier
+estado. En el problema relajado, cada fluente de la meta se alcanza en un solo paso (o el problema
+es imposible). El número de pasos para resolver el problema relajado es, aproximadamente, el número
+de metas todavía insatisfechas.
+\end{definition}
+
+\textbf{Estrategia general:} contar el mínimo número de acciones tal que la unión de sus efectos
+satisfaga la meta. Esto es exactamente una \textbf{instancia del problema de cobertura de conjuntos}
+(\textit{set cover}): dado un universo $\{1,\ldots,m\}$ y $n$ conjuntos cuya unión cubre el universo,
+hallar el menor número de conjuntos cuya unión también lo cubre.
+
+\begin{example}[Cobertura de conjuntos]
+Sea $U=\{1,2,3,4,5\}$ y $S=\{\{1,2,3\},\ \{4,5\}\}$: basta escoger los dos conjuntos de $S$ para
+cubrir $U$.
+\end{example}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\node[draw=black, thick, ellipse, minimum width=3.2cm, minimum height=2.2cm] (S1) at (0,0.3) {};
+\node at (0,0.9) {$1$};
+\node at (-0.6,0) {$2$};
+\node at (0.6,0) {$3$};
+\node at (0,-1.3) {$\{1,2,3\}$};
+
+\node[draw=black, thick, ellipse, minimum width=2.4cm, minimum height=2.2cm] (S2) at (4,0.3) {};
+\node at (3.8,0.7) {$4$};
+\node at (4.2,0.2) {$5$};
+\node at (4,-1.3) {$\{4,5\}$};
+\end{tikzpicture}
+\caption{$U=\{1,2,3,4,5\}$ cubierto por $S=\{\{1,2,3\},\{4,5\}\}$: la cobertura mínima requiere
+ambos conjuntos.}
+\end{figure}
+
+El problema de cobertura mínima es \textbf{NP-Hard} en general, pero un algoritmo voraz simple
+(cobertura por conjuntos) devuelve una cobertura dentro de un factor $\log n$ de la mínima real,
+donde $n$ es el número de literales en la meta --suficiente para una heurística útil, aunque no
+exacta.
+
+\textbf{Paso a paso del algoritmo voraz sobre el ejemplo anterior:}
+\begin{enumerate}
+    \item Elementos sin cubrir: $\{1,2,3,4,5\}$.
+    \item Escoger el conjunto de $S$ que cubre \textbf{más} elementos sin cubrir todavía:
+    $\{1,2,3\}$ cubre 3 elementos, $\{4,5\}$ cubre 2; se escoge $\{1,2,3\}$.
+    \item Elementos sin cubrir restantes: $\{4,5\}$.
+    \item Escoger de nuevo el conjunto que más cubre: solo queda $\{4,5\}$, que cubre los 2
+    restantes; se escoge.
+    \item Elementos sin cubrir: $\varnothing$ $\Rightarrow$ se detiene. Cobertura hallada:
+    $\{\{1,2,3\},\{4,5\}\}$, de tamaño 2 --que en este ejemplo coincide con la cobertura mínima real.
+\end{enumerate}
+
+\begin{example}[8-puzzle]
+Con el schema
+\[
+    \text{Acci\'on}(Mover(t,s_1,s_2))
+\]
+\[
+    \textsc{Precond}:\ En(t,s_1)\land Baldosa(t)\land Vacia(s_2)\land Adyacente(s_1,s_2)
+\]
+\[
+    \textsc{Efecto}:\ En(t,s_2)\land Vacia(s_1)\land \neg En(t,s_1)\land \neg Vacia(s_2)
+\]
+dos relajaciones distintas producen dos heurísticas clásicas:
+\begin{itemize}
+    \item Remover $Vacia(s_2)\land Adyacente(s_1,s_2)$: cualquier baldosa se puede mover a cualquier
+    casilla en una sola acción $\Rightarrow$ heurística del \textbf{número de baldosas fuera de
+    lugar}.
+    \item Remover solo $Vacia(s_2)$ (se conserva $Adyacente$): cada baldosa solo se puede mover a
+    casillas adyacentes, pero sin bloqueos $\Rightarrow$ heurística de \textbf{distancia Manhattan}.
+\end{itemize}
+
+\textbf{Ejemplo numérico (informedness):} supóngase un estado con exactamente 3 baldosas fuera de su
+posición meta.
+\begin{enumerate}
+    \item Heurística $h_1$ (baldosas fuera de lugar): cuenta directamente las baldosas mal
+    ubicadas, sin importar qué tan lejos estén $\Rightarrow h_1 = 3$.
+    \item Heurística $h_2$ (distancia Manhattan): suma, para cada baldosa fuera de lugar, el número
+    de casillas que la separan (en horizontal + vertical) de su posición meta. Si esas 3 baldosas
+    están, respectivamente, a 1, 2 y 2 pasos de su posición meta, $h_2 = 1+2+2 = 5$.
+    \item Como $h_2 \ge h_1$ siempre (mover una baldosa fuera de lugar toma al menos 1 paso, y puede
+    tomar más si no está adyacente a su destino), $h_2$ \textbf{domina} a $h_1$: es una heurística
+    más informada --ambas son admisibles, pero $h_2$ da estimados más ajustados y por tanto expande
+    menos nodos.
+\end{enumerate}
+\end{example}
+
+\subsection{Heurística de Ignorar Listas de Borrado (Delete Lists)}
+
+\begin{definition}[Ignorar listas de borrado]
+Se asume que metas y precondiciones están compuestas \textbf{solo por literales positivos}, y se
+remueven las listas de borrado de las acciones (los literales negados de sus efectos): ningún
+fluente se elimina nunca. El problema de planeación relajado resultante es resoluble en
+\textbf{tiempo polinomial} mediante ascenso de colinas (\textit{hill climbing}) sobre el espacio de
+estados, donde los arcos son acciones y la altura de cada punto es el valor heurístico.
+\end{definition}
+
+\subsubsection{Grafo de Planeación y Heurística FF}
+
 Un \textbf{grafo de planeación} alterna capas de literales y acciones:
 \begin{itemize}
     \item Capa de literales $S_i$: literales alcanzables en $i$ pasos.
     \item Capa de acciones $A_i$: acciones aplicables en el paso $i$.
 \end{itemize}
-La heurística FF usa el plan del grafo relajado como estimador.
+Se construye en tiempo polinomial (a diferencia del espacio de estados completo) y la heurística
+\textbf{FF} (\textit{Fast-Forward}) usa la longitud del plan hallado sobre el grafo relajado
+(ignorando listas de borrado) como estimador del costo restante.
+
+\subsection{Podado Independiente de Dominio}
+
+Además de relajar el problema para obtener una heurística, se pueden podar ramas del árbol de
+búsqueda sin perder --o aceptando perder-- la garantía de optimalidad.
+
+\paragraph{Reducción por simetría.} Se podan todas las ramas simétricas del árbol de búsqueda salvo
+una. Dos acciones son \textbf{simétricas} si generan dos estados equivalentes en el contexto del
+problema: mismas precondiciones y efectos estructurales, difiriendo solo en objetos que la meta no
+distingue entre sí.
+
+\begin{example}[Mundo de bloques]
+Con estado inicial $Sobre(A,Mesa)\land Sobre(B,Mesa)\land Sobre(C,Mesa)\land Despejar(A)\land
+Despejar(B)\land Despejar(C)$ y meta $Sobre(A,B)$, las acciones $Mover(A,Mesa,B)$ y $Mover(A,Mesa,C)$
+tienen la misma estructura (mover $A$ a la mesa hacia otro bloque despejado): como la meta no
+distingue entre $B$ y $C$, ambas ramas son simétricas y basta explorar una.
+
+\textbf{Verificación paso a paso de la simetría:}
+\begin{enumerate}
+    \item \textbf{Mismas precondiciones:} $Mover(A,Mesa,B)$ exige $Despejar(B)$;
+    $Mover(A,Mesa,C)$ exige $Despejar(C)$ --ambas se cumplen en el estado inicial, con la misma
+    estructura (mover $A$ hacia un bloque despejado cualquiera).
+    \item \textbf{Mismos efectos estructurales:} ambas acciones producen $Sobre(A,\cdot)$ sobre un
+    bloque que queda despejado antes de mover, difiriendo solo en si ese bloque se llama $B$ o $C$.
+    \item \textbf{La meta no distingue:} $Sobre(A,B)$ menciona a $B$ explícitamente, pero nada en el
+    problema obliga a preferir $B$ sobre $C$ \emph{antes} de decidir --ambos objetos son
+    intercambiables en este punto de la búsqueda.
+    \item Como las tres condiciones se cumplen, se declara la simetría y se \textbf{descarta} una de
+    las dos ramas (p. ej. $Mover(A,Mesa,C)$) sin perder la solución óptima, reduciendo a la mitad el
+    factor de ramificación efectivo en este paso.
+\end{enumerate}
+\end{example}
+
+\paragraph{Acciones preferidas.} Se asume el riesgo de podar una solución óptima a cambio de guiar
+la búsqueda rápidamente: se define una versión \textbf{relajada} del problema, se resuelve para
+obtener un \textbf{plan relajado}, y se llama \textbf{acción preferida} a cualquier acción que sea un
+paso de ese plan relajado o que logre alguna de sus precondiciones. La búsqueda hacia adelante
+explora primero las acciones preferidas.
+
+\begin{example}
+Con el mismo estado inicial y meta $Sobre(A,B)$ del ejemplo anterior, las seis acciones posibles son
+$Mover(A,Mesa,B)$, $Mover(A,Mesa,C)$, $Mover(B,Mesa,A)$, $Mover(B,Mesa,C)$, $Mover(C,Mesa,A)$,
+$Mover(C,Mesa,B)$. La relajación (ignorar precondiciones/borrado) resuelve la meta en un paso con
+$Mover(A,Mesa,B)$, así que esa es la \textbf{acción preferida}: se explora antes que las otras cinco.
+
+\textbf{Paso a paso de la relajación:}
+\begin{enumerate}
+    \item Construir el problema relajado: se ignoran las precondiciones (todas las 6 acciones
+    quedan aplicables de inmediato) y las listas de borrado de sus efectos.
+    \item Revisar el efecto de cada una de las 6 acciones: solo $Mover(A,Mesa,B)$ tiene
+    $Sobre(A,B)$ --el fluente exacto de la meta-- en su lista de agregado.
+    \item El plan relajado óptimo es, entonces, $[Mover(A,Mesa,B)]$, de un solo paso.
+    \item Como $Mover(A,Mesa,B)$ es un paso de ese plan relajado, se marca como \textbf{acción
+    preferida} y la búsqueda hacia adelante la explora antes que las otras cinco.
+\end{enumerate}
+\end{example}
+
+\paragraph{Remover interacciones negativas (submetas serializables).} Un problema tiene
+\textbf{submetas serializables} si existe un orden en el que el planificador puede lograrlas una por
+una \textbf{sin deshacer} ninguna submeta ya alcanzada (sin necesidad de backtracking).
+
+\begin{example}
+En el mundo de bloques, para construir una torre $A$ sobre $B$ sobre $C$ sobre la mesa, lograr
+primero ``$C$ sobre la mesa'' no requiere deshacerse después: las submetas son serializables en ese
+orden. Un contraejemplo clásico son $n$ interruptores que controlan cada uno una luz separada, con
+meta ``todas las luces encendidas'': si se define un orden particular de submetas, ninguna acción
+posterior interfiere con las anteriores.
+
+\textbf{Paso a paso (torre $A$ sobre $B$ sobre $C$):}
+\begin{enumerate}
+    \item Lograr $Sobre(C,Mesa)$: ya es verdadero en el estado inicial (o se logra sin depender de
+    $A$ ni $B$).
+    \item Lograr $Sobre(B,C)$: la acción $Mover(B,Mesa,C)$ no toca a $A$ ni deshace
+    $Sobre(C,Mesa)$ --sigue siendo verdadero después.
+    \item Lograr $Sobre(A,B)$: la acción $Mover(A,Mesa,B)$ no deshace $Sobre(B,C)$ ni
+    $Sobre(C,Mesa)$.
+    \item Como ningún paso deshizo una submeta ya lograda, el orden $C,\ B,\ A$ es una
+    \textbf{serialización válida} --no hizo falta backtracking.
+\end{enumerate}
+\textbf{Paso a paso ($n$ interruptores):} con $Prender(I_i)$ afectando únicamente a su luz $L_i$,
+lograr $L_1$, luego $L_2$, \ldots, luego $L_n$ en cualquier orden nunca deshace una luz ya encendida,
+porque cada interruptor es independiente de los demás --las $n$ submetas son serializables en
+\emph{cualquier} orden.
+\end{example}
+
+\paragraph{Abstracción de estado.} Muchos problemas reales tienen $10^{100}$ estados o más; relajar
+las \emph{acciones} (como arriba) no reduce el número de \emph{estados}, así que evaluar la
+heurística sigue siendo costoso. La \textbf{abstracción de estado} ataca esto \textbf{ignorando
+algunos fluentes} por completo, reduciendo drásticamente el tamaño del espacio de estados sobre el
+que se calcula la heurística.
+
+\begin{example}[Carga aérea]
+Con 10 aeropuertos, 50 aviones y 200 piezas de cargo, el espacio de estados completo tiene del orden
+de $10^{405}$ estados. Si se supone que todos los paquetes están en 5 aeropuertos y todos comparten
+destino, y se \textbf{ignoran los fluentes} salvo los que registran un avión y un paquete en cada uno
+de esos 5 aeropuertos, el espacio abstracto se reduce a apenas $10^{11}$ estados.
+
+\textbf{De dónde salen estas magnitudes (orden de magnitud, no cálculo exacto):}
+\begin{enumerate}
+    \item \textbf{Espacio completo:} cada uno de los 200 cargos puede estar en cualquiera de
+    $\approx 60$ ubicaciones (10 aeropuertos o dentro de alguno de los 50 aviones), y cada uno de
+    los 50 aviones puede estar en cualquiera de los 10 aeropuertos: el producto de todas estas
+    posibilidades independientes ($\approx 60^{200}\times 10^{50}$) ya está en el orden de
+    $10^{405}$.
+    \item \textbf{Espacio abstracto:} si solo interesa, para cada uno de los 5 aeropuertos
+    relevantes, si hay o no un avión presente y si hay o no un paquete presente (dos posibilidades
+    cada uno), el número de combinaciones relevantes se reduce en muchísimos órdenes de magnitud
+    --hasta quedar en el orden de $10^{11}$, todavía grande, pero $\approx 10^{394}$ veces más
+    pequeño que el espacio completo.
+    \item \textbf{Consecuencia:} calcular (o aproximar) una heurística sobre $10^{11}$ estados
+    abstractos es factible; hacerlo sobre $10^{405}$ estados reales no lo es.
+\end{enumerate}
+\end{example}
+
+\paragraph{Ideas clave para construir heurísticas: descomposición.} Se divide el problema en partes,
+se resuelve cada parte por separado, y se combinan los resultados, bajo la \textbf{suposición de
+independencia de submetas}: el costo de resolver una conjunción de submetas es, aproximadamente, la
+suma de los costos de resolver cada submeta por separado. Esta suposición puede fallar en dos
+direcciones:
+\begin{itemize}
+    \item \textbf{Optimista:} existen interacciones negativas entre los subplanes de cada submeta
+    (un subplan deshace el progreso de otro), así que el costo real es \textbf{mayor} que la suma.
+    \item \textbf{Pesimista:} los subplanes contienen acciones redundantes (dos acciones se pueden
+    reemplazar por una sola que sirva a ambas submetas), así que el costo real es \textbf{menor} que
+    la suma.
+\end{itemize}
+
+\textbf{Costo de heurísticas por descomposición:} sea una meta con fluentes $G$ dividida en
+submetas $G_1,\ldots,G_n$, y sean $P_1,\ldots,P_n$ los planes óptimos que resuelven cada submeta por
+separado, con $\textsc{Costo}(P_i)$ como estimado heurístico de cada una.
+\begin{itemize}
+    \item Combinar los estimados con el \textbf{máximo}, $\max_i \textsc{Costo}(P_i)$, produce una
+    heurística \textbf{admisible}.
+    \item Combinar los estimados con la \textbf{suma}, $\sum_i \textsc{Costo}(P_i)$, en general
+    \textbf{no} es admisible (por las interacciones negativas de arriba).
+    \item Es necesario escoger las abstracciones con cuidado, de modo que el costo de calcular la
+    heurística sea menor que el costo de resolver el problema original --si no, la heurística no
+    aporta nada.
+\end{itemize}
+
+\begin{example}[Máximo vs. suma]
+Sea $G=G_1\land G_2$, con $\textsc{Costo}(P_1)=3$ y $\textsc{Costo}(P_2)=4$ resolviendo cada submeta
+por separado.
+\begin{enumerate}
+    \item \textbf{Combinando con el máximo:} $\max(3,4)=4$. Esto nunca sobrestima el costo real,
+    porque resolver \emph{ambas} submetas juntas cuesta, como mínimo, lo que cuesta la más difícil de
+    las dos por separado $\Rightarrow$ admisible.
+    \item \textbf{Combinando con la suma:} $3+4=7$. Si existe una única acción que logra un fluente
+    de $G_1$ \emph{y} un fluente de $G_2$ a la vez (redundancia entre los subplanes), el costo real
+    de lograr $G_1\land G_2$ juntas podría ser menor que 7 (p. ej. 5) $\Rightarrow$ la suma
+    \textbf{sobrestimaría} el costo real, violando la admisibilidad.
+\end{enumerate}
+\end{example}
+
+\begin{example}[Aplicación real: NASA Deep Space 1]
+La sonda \textit{Deep Space 1} de la NASA usó restricciones temporales y de compatibilidad
+codificadas en un lenguaje similar a PDDL (\textit{Remote Agent}) para planear y ejecutar maniobras
+autónomamente, ilustrando que estas técnicas de podado y relajación escalan a dominios reales de
+control de naves espaciales.
+\end{example}
 
 \subsection{Planeación Jerárquica (HTN)}
 
-\textbf{Hierarchical Task Network (HTN)}: descompone tareas abstractas en subtareas más concretas.
+Ni siquiera las heurísticas anteriores evitan que la planeación de bajo nivel sea inviable cuando la
+solución requiere \textbf{millones o miles de millones de acciones primitivas} (p. ej. ``mover la
+rodilla 5 grados'' repetido para cada micro-ajuste de un viaje completo). La
+\textbf{planeación jerárquica} (\textit{Hierarchical Task Network}, HTN) ataca el problema
+organizando las acciones en \textbf{niveles de abstracción}, en vez de (o además de) usar
+heurísticas.
+
+\begin{definition}[HTN]
+Una red jerárquica de tareas descompone \textbf{tareas abstractas} en \textbf{subtareas} más
+concretas, hasta llegar a \textbf{tareas primitivas} (acciones directamente ejecutables). Se asume
+observabilidad completa y determinismo.
+\end{definition}
 
 \begin{itemize}
-    \item \textbf{Tareas primitivas}: acciones directamente ejecutables.
-    \item \textbf{Tareas abstractas}: se descomponen mediante métodos.
-    \item Ventaja: permite incorporar conocimiento de dominio para guiar la búsqueda.
+    \item \textbf{Tareas primitivas}: acciones directamente ejecutables, con schema estándar
+    (nombre, precondición, efecto).
+    \item \textbf{Tareas abstractas} (\textbf{acciones de alto nivel}, HLA): se descomponen mediante
+    \textbf{métodos de refinamiento} en secuencias de subtareas.
+    \item \textbf{Ventaja}: permite incorporar conocimiento de dominio (qué refinamientos probar
+    primero) para guiar la búsqueda, y --como se ve más adelante-- reduce drásticamente el costo
+    computacional frente a un planificador plano.
 \end{itemize}
+
+\begin{example}[Refinamiento recursivo]
+La acción de alto nivel $Ir(Casa,SFO)$ admite (al menos) dos refinamientos:
+\[
+    \textsc{Refinamiento}(Ir(Casa,SFO)),
+\]
+\[
+    \textsc{Pasos}:\ [Manejar(Casa,ParqueaderoSFO),\ Bus(ParqueaderoSFO,SFO)]
+\]
+\[
+    \textsc{Refinamiento}(Ir(Casa,SFO)),\quad \textsc{Pasos}: [Taxi(Casa,SFO)]
+\]
+y una acción de alto nivel puede definirse \textbf{recursivamente}: por ejemplo, $Navegar([a,b],
+[x,y])$ (ir de la celda $(a,b)$ a la celda $(x,y)$ en una cuadrícula) se refina en el caso base
+(ya se llegó) y en dos casos recursivos (moverse a la celda de la izquierda o de la derecha si está
+conectada):
+\[
+    \textsc{Refinamiento}(Navegar([a,b],[x,y])),\quad \textsc{Precond}:\ a{=}x\land b{=}y,\quad
+    \textsc{Pasos}: []
+\]
+\[
+    \textsc{Refinamiento}(Navegar([a,b],[x,y])),\quad \textsc{Precond}:\ Conectados([a,b],[a{-}1,b]),
+\]
+\[
+    \textsc{Pasos}:\ [Izquierda,\ Navegar([a{-}1,b],[x,y])]
+\]
+(y análogamente para $Derecha$ con $[a{+}1,b]$).
+
+\textbf{Traza paso a paso de $Navegar([0,0],[2,0])$}, suponiendo que $[0,0]$--$[1,0]$--$[2,0]$ están
+conectadas en línea recta:
+\begin{enumerate}
+    \item $Navegar([0,0],[2,0])$: $a{=}0,\,b{=}0,\,x{=}2,\,y{=}0$. Como $a\neq x$, no aplica el
+    caso base; se cumple $Conectados([0,0],[1,0])$, así que se usa el refinamiento hacia la derecha:
+    $\textsc{Pasos} = [Derecha,\ Navegar([1,0],[2,0])]$.
+    \item $Navegar([1,0],[2,0])$: de nuevo $a{=}1\neq x{=}2$; se cumple $Conectados([1,0],[2,0])$:
+    $\textsc{Pasos} = [Derecha,\ Navegar([2,0],[2,0])]$.
+    \item $Navegar([2,0],[2,0])$: ahora $a{=}x{=}2$ y $b{=}y{=}0$, se cumple la precondición del
+    \textbf{caso base}: $\textsc{Pasos} = []$.
+    \item Concatenando las tres capas de refinamiento, el plan primitivo final es
+    $[Derecha,\ Derecha]$.
+\end{enumerate}
+\end{example}
+
+\subsubsection{Búsqueda para Soluciones Primitivas}
+
+\textbf{Formulación:} se define una acción de alto nivel raíz, $Actuar$, cuyo objetivo es encontrar
+una implementación que lleve a la meta. Para cada acción primitiva $a_i$ del problema, se añade un
+refinamiento de $Actuar$ con pasos $[a_i,\ Actuar]$ (una definición recursiva que va añadiendo
+acciones); el ciclo se detiene añadiendo un refinamiento con una lista de pasos \textbf{vacía} cuya
+precondición es la meta del problema.
+
+\begin{algorithm}[H]
+\caption{HIERARCHICAL-SEARCH($problem$, $hierarchy$) --- búsqueda jerárquica en anchura}
+\begin{algorithmic}[1]
+\State $frontier \gets$ cola FIFO con $[Actuar]$ como único elemento
+\While{verdadero}
+    \If{$frontier$ está vacía} \Return \textbf{fracaso} \EndIf
+    \State $plan \gets \Call{Pop}{frontier}$ \Comment{el plan menos refinado de la frontera}
+    \State $hla \gets$ la primera HLA en $plan$ (nulo si no hay ninguna)
+    \State $prefijo,\ sufijo \gets$ subsecuencias de acciones antes/después de $hla$ en $plan$
+    \State $resultado \gets \textsc{Resultado}(problem.\textsc{Inicial},\ prefijo)$
+    \If{$hla$ es nulo} \Comment{el plan es primitivo; $resultado$ es su efecto}
+        \If{$problem.\textsc{EsMeta}(resultado)$} \Return $plan$ \EndIf
+    \Else
+        \For{cada $secuencia$ en $\textsc{Refinamientos}(hla,\ resultado,\ hierarchy)$}
+            \State agregar $\textsc{Concatenar}(prefijo,\ secuencia,\ sufijo)$ a $frontier$
+        \EndFor
+    \EndIf
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+
+\textbf{Traza paso a paso} (meta: llegar a SFO, a partir de $Ir(Casa,SFO)$ con los dos refinamientos
+del Ejemplo 4.8):
+\begin{enumerate}
+    \item $frontier = [\,[Ir(Casa,SFO)]\,]$.
+    \item Se extrae $[Ir(Casa,SFO)]$: $hla=Ir(Casa,SFO)$ (no nulo); $prefijo=[]$, $sufijo=[]$;
+    $resultado = \textsc{Resultado}(Casa,[]) = Casa$.
+    \item Como $hla$ no es nulo, se buscan sus refinamientos:
+    $\textsc{Refinamientos}(Ir(Casa,SFO),Casa,hierarchy)$ da las dos secuencias
+    $[Manejar(Casa,ParqueaderoSFO),Bus(ParqueaderoSFO,SFO)]$ y $[Taxi(Casa,SFO)]$, y ambas se
+    agregan a la frontera: $frontier = [\,[Manejar,\ Bus],\ [Taxi]\,]$ (en notación abreviada).
+    \item Se extrae el primer plan, $[Manejar,\ Bus]$ (orden FIFO): ya no contiene ninguna HLA
+    ($hla$ = nulo), así que es \textbf{primitivo}; $resultado = \textsc{Resultado}(Casa,[Manejar,\
+    Bus]) = EstarEn(SFO)$.
+    \item Como $problem.\textsc{EsMeta}(EstarEn(SFO))$ es verdadero, el algoritmo \textbf{retorna}
+    el plan
+    \[
+        [Manejar(Casa,ParqueaderoSFO),\ Bus(ParqueaderoSFO,SFO)]
+    \]
+    --sin necesidad de examinar la rama $[Taxi(Casa,SFO)]$, que queda sin explorar en la frontera.
+\end{enumerate}
+
+\textbf{Propiedades:} sea $d$ el número de acciones primitivas de la solución y $b$ el número de
+acciones aplicables por estado. Un planificador \textbf{no jerárquico} tiene costo
+$\mathcal{O}(b^d)$. Un planificador \textbf{jerárquico} donde cada acción no primitiva admite $r$
+refinamientos, cada uno con $k$ acciones en el siguiente nivel, puede construir hasta
+$r^{(d-1)/(k-1)}$ árboles de descomposición distintos --mucho menor que $b^d$ cuando los
+refinamientos capturan bien la estructura del dominio. Además, el conocimiento de dominio también
+puede introducirse directamente en las precondiciones ($\textsc{Precond}$) de los refinamientos, y
+la estructura jerárquica resultante es más fácil de interpretar para humanos.
+
+\textbf{Ejemplo numérico:} con $b=10$ acciones aplicables por estado y una solución de $d=20$
+pasos primitivos, un planificador \textbf{no jerárquico} enfrenta hasta $10^{20}$ nodos posibles. Si
+la jerarquía ofrece $r=3$ refinamientos alternativos por HLA, cada uno con $k=4$ acciones en el
+siguiente nivel, el planificador \textbf{jerárquico} construye a lo sumo
+$3^{(20-1)/(4-1)} = 3^{19/3} \approx 3^{6.3}$, del orden de \textbf{unos pocos miles} de árboles de
+descomposición --muchísimos órdenes de magnitud menos que $10^{20}$.
+
+\subsubsection{Búsqueda para Soluciones Abstractas: Semántica Angelical}
+
+La búsqueda anterior solo reconoce una solución cuando el plan ya es \textbf{completamente
+primitivo}, lo cual contradice el sentido común: debería ser posible afirmar que el plan
+\[
+    [Manejar(Casa,ParqueaderoSFO),\ Bus(ParqueaderoSFO,SFO)]
+\]
+llega al aeropuerto sin refinarlo hasta el nivel de presionar pedales. La solución es escribir
+descripciones de \textbf{precondición-efecto para las acciones de alto nivel}, igual que para las
+primitivas.
+
+\begin{definition}[No determinismo demónico vs. angelical]
+Cuando una acción de alto nivel tiene múltiples implementaciones posibles, hay dos formas de
+interpretar esa variabilidad:
+\begin{itemize}
+    \item \textbf{Demónico}: un adversario escoge la implementación (como en juegos adversarios).
+    \item \textbf{Angelical}: el \textbf{agente} escoge la implementación que más le convenga --entre
+    más refinamientos tenga una acción de alto nivel, más poderosa es bajo esta semántica.
+\end{itemize}
+\end{definition}
+
+\begin{definition}[Set alcanzable, REACH]
+Dado un estado $s$, el \textbf{set alcanzable} de una acción de alto nivel $h$, escrito
+$\textsc{Reach}(s,h)$, es el conjunto de todos los estados alcanzables por \emph{alguna}
+implementación primitiva de $h$. El set alcanzable de una secuencia se compone:
+\[
+    \textsc{Reach}(s,[h_1,h_2]) = \bigcup_{s' \in \textsc{Reach}(s,h_1)} \textsc{Reach}(s',h_2).
+\]
+Un plan de alto nivel llega a la meta exactamente cuando su set alcanzable \textbf{interseca} el
+conjunto de estados meta.
+\end{definition}
+
+\textbf{Notación de efectos posiblemente inciertos} (para acciones de alto nivel cuya implementación
+exacta aún no se fija):
+\begin{itemize}
+    \item $\widetilde{+}A$: posiblemente añade $A$.
+    \item $\widetilde{-}A$: posiblemente remueve $A$.
+    \item $\widetilde{\pm}A$: posiblemente añade \emph{o} remueve $A$.
+\end{itemize}
+
+\begin{example}
+Si $Ir(Casa,SFO)$ tiene dos refinamientos (manejar+bus, o taxi) y el agente solo toma taxi si tiene
+dinero, entonces la acción de alto nivel \emph{posiblemente} remueve $Dinero$ (efecto
+$\widetilde{-}Dinero$). Con schemas abstractos para $h_1$ y $h_2$:
+\[
+    \text{Acci\'on}(h_1),\quad \textsc{Precond}:\ \neg A,\quad \textsc{Efecto}:\ A\land
+    \widetilde{-}B
+\]
+\[
+    \text{Acci\'on}(h_2),\quad \textsc{Precond}:\ \neg B,\quad \textsc{Efecto}:\ \widetilde{+}A\land
+    \widetilde{\pm}C
+\]
+\end{example}
+
+Como puede haber \textbf{infinitas} implementaciones distintas de una acción de alto nivel, se usan
+dos aproximaciones del set alcanzable real:
+\[
+    \textsc{Reach}^-(s,h) \;\subseteq\; \textsc{Reach}(s,h) \;\subseteq\; \textsc{Reach}^+(s,h),
+\]
+donde $\textsc{Reach}^+$ (descripción \textbf{optimista}) \textbf{sobreaproxima} el set alcanzable
+real, y $\textsc{Reach}^-$ (descripción \textbf{pesimista}) lo \textbf{subaproxima}.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\node[draw=black, thick, dashed, ellipse, minimum width=6cm, minimum height=3.6cm] (Rp) at (0,0) {};
+\node[draw=black, thick, ellipse, minimum width=3.2cm, minimum height=2cm] (R) at (-0.6,0) {};
+\node[draw=black, thick, ellipse, minimum width=1.6cm, minimum height=1cm, fill=white] (Rm) at
+    (-0.6,0) {};
+\node[draw=black, thick, ellipse, minimum width=3cm, minimum height=2.4cm] (G) at (2.6,0) {};
+
+\node at (-0.6,0) {$\textsc{Reach}^-$};
+\node at (-0.6,1.35) {$\textsc{Reach}$};
+\node at (0,2) {$\textsc{Reach}^+$};
+\node at (2.6,0) {Meta};
+\end{tikzpicture}
+\caption{$\textsc{Reach}^-\subseteq\textsc{Reach}\subseteq\textsc{Reach}^+$: si $\textsc{Reach}^-$ ya
+interseca la meta, hay solución garantizada; si ni siquiera $\textsc{Reach}^+$ la interseca, no hay
+solución; si solo $\textsc{Reach}^+$ la interseca, el resultado es ambiguo y hace falta refinar más.}
+\end{figure}
+
+\textbf{Verificación:}
+\begin{itemize}
+    \item Si $\textsc{Reach}^+(s,plan)$ \textbf{no} interseca el set de metas $\Rightarrow$ no existe
+    solución por ese plan (ni ninguna de sus implementaciones puede llegar a la meta).
+    \item Si $\textsc{Reach}^-(s,plan)$ \textbf{sí} interseca el set de metas $\Rightarrow$ existe
+    solución garantizada (al menos una implementación llega a la meta).
+    \item Si solo $\textsc{Reach}^+$ interseca (y $\textsc{Reach}^-$ no) $\Rightarrow$ el resultado es
+    \textbf{ambiguo}: hace falta refinar el plan más para decidir.
+\end{itemize}
+
+\begin{algorithm}[H]
+\caption{ANGELIC-SEARCH($problem$, $hierarchy$, $planInicial$)}
+\begin{algorithmic}[1]
+\State $frontier \gets$ cola FIFO con $planInicial$ como único elemento
+\While{verdadero}
+    \If{$frontier$ está vacía} \Return \textbf{fracaso} \EndIf
+    \State $plan \gets \Call{Pop}{frontier}$
+    \If{$\textsc{Reach}^+(problem.\textsc{Inicial},plan)$ interseca $problem.\textsc{Meta}$}
+        \If{$plan$ es primitivo} \Return $plan$ \EndIf
+        \State $garantizado \gets \textsc{Reach}^-(problem.\textsc{Inicial},plan) \cap
+        problem.\textsc{Meta}$
+        \If{$garantizado\neq\varnothing$ \textbf{y} \textsc{HayProgreso}($plan$,$planInicial$)}
+            \State $s_f \gets$ cualquier elemento de $garantizado$
+            \State \Return \Call{Descomponer}{$hierarchy,problem.\textsc{Inicial},plan,s_f$}
+        \EndIf
+        \State $hla \gets$ alguna HLA en $plan$
+        \State $prefijo,\ sufijo \gets$ subsecuencias antes/después de $hla$ en $plan$
+        \State $resultado \gets \textsc{Resultado}(problem.\textsc{Inicial},prefijo)$
+        \For{cada $secuencia$ en $\textsc{Refinamientos}(hla,resultado,hierarchy)$}
+            \State insertar $\textsc{Concatenar}(prefijo,secuencia,sufijo)$ en $frontier$
+        \EndFor
+    \EndIf
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+
+\textsc{HayProgreso} verifica que la búsqueda no esté en un ciclo infinito de refinamientos; una vez
+se garantiza que \emph{alguna} implementación llega a la meta, \textsc{Descomponer} reconstruye la
+solución completa dividiendo el problema en subproblemas más pequeños, resolviendo cada uno de forma
+recursiva con \textsc{AngelicSearch}.
+
+\textbf{Traza paso a paso} (meta: estar en SFO, $planInicial=[Ir(Casa,SFO)]$, retomando el
+Ejemplo 4.8, donde \emph{ambos} refinamientos de $Ir(Casa,SFO)$ terminan en SFO):
+\begin{enumerate}
+    \item $frontier = [\,[Ir(Casa,SFO)]\,]$.
+    \item Se extrae $[Ir(Casa,SFO)]$. Se calcula $\textsc{Reach}^+(Casa,[Ir(Casa,SFO)])$: la unión
+    de los efectos de \emph{ambos} refinamientos posibles (manejar+bus, o taxi) es $\{SFO\}$, que
+    \textbf{interseca} la meta.
+    \item El plan $[Ir(Casa,SFO)]$ \textbf{no} es primitivo (contiene una HLA), así que se calcula
+    \[
+        \textsc{Reach}^-(Casa,[Ir(Casa,SFO)]):
+    \]
+    como los \emph{dos} refinamientos posibles llegan a SFO sin excepción (no hay incertidumbre
+    sobre el destino final), $\textsc{Reach}^- = \{SFO\}$ también.
+    \item $garantizado = \textsc{Reach}^-\cap\textsc{Meta} = \{SFO\}\neq\varnothing$, y
+    $\textsc{HayProgreso}$ confirma que no hay ciclo: se cumple la condición de la línea 10 del
+    Algoritmo 3.
+    \item Se retorna $\Call{Descomponer}{hierarchy,\ Casa,\ [Ir(Casa,SFO)],\ SFO}$, que reconstruye
+    una implementación primitiva concreta --por ejemplo,
+    \[
+        [Manejar(Casa,ParqueaderoSFO),\ Bus(ParqueaderoSFO,SFO)]
+    \]
+    -- \textbf{sin} haber tenido que enumerar y comparar explícitamente ambos refinamientos
+    acción por acción, como sí lo hacía
+    HIERARCHICAL-SEARCH.
+\end{enumerate}
+
+\begin{example}[Ventaja de la búsqueda angelical: mundo de aspiradora con $D$ piezas]
+Sea un mundo con muchas piezas (habitaciones) conectadas por corredores, cada una de $w\times h$
+casillas, con la jerarquía ``Navegar $\to$ por pieza LimpiarTodaLaPieza $\to$ limpiar cada fila''.
+Con $D$ el tamaño de la solución mínima:
+\begin{itemize}
+    \item BFS plano: $\mathcal{O}(5^D)$ nodos.
+    \item Búsqueda jerárquica (sin semántica angelical): mejora sobre BFS, pero sigue intentando
+    encontrar \textbf{todas} las formas consistentes de limpiar cada pieza.
+    \item Búsqueda angelical: escala \textbf{aproximadamente lineal} en el número de casillas, porque
+    \textsc{Reach}$^-$/\textsc{Reach}$^+$ permiten confirmar o descartar una acción de alto nivel
+    completa sin enumerar sus implementaciones primitivas una por una.
+\end{itemize}
+
+\textbf{Ejemplo numérico:} sea un edificio de 5 piezas de $3\times 3$ casillas cada una, donde
+limpiar una pieza completa toma $D_{pieza}\approx 9$ pasos primitivos (uno por casilla), para un
+total de $D\approx 45$ pasos primitivos.
+\begin{itemize}
+    \item BFS plano: hasta $5^{45}$ nodos --completamente inviable.
+    \item Búsqueda jerárquica (sin semántica angelical): reduce la búsqueda a nivel de
+    \textit{LimpiarTodaLaPieza} por pieza, pero sigue enumerando las distintas formas concretas de
+    recorrer las 9 casillas de cada una.
+    \item Búsqueda angelical: usando $\textsc{Reach}^+/\textsc{Reach}^-$, \textit{LimpiarTodaLaPieza}
+    se confirma o descarta como un solo paso de alto nivel --sin enumerar las 9 casillas
+    internamente-- así que el costo escala con el número de \textbf{piezas} (5), no con $D$ (45).
+\end{itemize}
+\end{example}
