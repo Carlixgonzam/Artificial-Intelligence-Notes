@@ -250,6 +250,33 @@ coloca $B$ sobre $C$ y luego $A$ sobre $B$.}
 
 \subsection{Búsqueda hacia Adelante en el Espacio de Estados (Progresión)}
 
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  st/.style={draw=black, thick, rectangle, rounded corners=2pt, align=center, inner sep=4pt, font=\small},
+  lbl/.style={font=\scriptsize, align=center}
+]
+% (a) forward
+\node at (-2.3,0.4) {\textbf{(a)}};
+\node[st] (S0) at (0,0)   {$En(P_1,A)$\\$En(P_2,A)$};
+\node[st] (S1) at (4,1.1) {$En(P_1,B)$\\$En(P_2,A)$};
+\node[st] (S2) at (4,-1.1){$En(P_1,A)$\\$En(P_2,B)$};
+\draw[-{Latex},thick] (S0) -- node[lbl,above]{$Volar(P_1,A,B)$} (S1);
+\draw[-{Latex},thick] (S0) -- node[lbl,below]{$Volar(P_2,A,B)$} (S2);
+
+% (b) backward
+\node at (-2.3,-3.6) {\textbf{(b)}};
+\node[st] (T0) at (4,-2.5)   {$En(P_1,B)$\\$En(P_2,B)$};
+\node[st] (T1) at (0,-3.6)   {$En(P_1,A)$\\$En(P_2,B)$};
+\node[st] (T2) at (0,-5.7)   {$En(P_1,B)$\\$En(P_2,A)$};
+\draw[-{Latex},thick] (T0) -- node[lbl,above]{$Volar(P_1,A,B)$} (T1);
+\draw[-{Latex},thick] (T0) -- node[lbl,below]{$Volar(P_2,A,B)$} (T2);
+\end{tikzpicture}
+\caption{(a) Búsqueda hacia adelante: desde el estado inicial, cada avión disponible genera una rama
+distinta al aplicar $Volar$. (b) Búsqueda hacia atrás: desde una meta con ambos aviones en $B$, cada
+regresión sobre $Volar$ genera un estado predecesor distinto, según cuál avión se supone que ya voló.}
+\end{figure}
+
 La \textbf{planeación de progresión} aplica los algoritmos de búsqueda genéricos (Cap. 3--4)
 directamente sobre PDDL: parte del estado inicial (conjunto de literales positivos, con suposición de
 mundo cerrado) y en cada estado $s$ genera $\textsc{Acciones}(s)$ unificando las precondiciones de
@@ -370,6 +397,46 @@ solucionador SAT; un modelo satisfactible codifica un plan válido.
     ($S_0, A_0, S_1, A_1,\ldots$) que se construye en tiempo polinomial y acota qué literales son
     alcanzables en cuántos pasos. Se retoma en la \textbf{Clase 3} como base de la heurística FF y de
     las heurísticas de planeación en general.
+
+    \begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+      lit/.style={circle, fill=black, inner sep=1.4pt},
+      lyr/.style={font=\small}
+    ]
+    % Layer S0 (x = 0)
+    \node[lit] (aP)  at (0,3)   {}; \node[lyr,above=1pt of aP]  {$P$};
+    \node[lit] (aQ)  at (0.9,3) {}; \node[lyr,above=1pt of aQ]  {$\neg Q$};
+    \node[lit] (aR)  at (1.8,3) {}; \node[lyr,above=1pt of aR]  {$R$};
+    \node[lit] (aS)  at (2.7,3) {}; \node[lyr,above=1pt of aS]  {$S$};
+    % Layer S1 (x = +4.2)
+    \node[lit] (bP)  at (4.2,1.5) {}; \node[lyr,above=1pt of bP]  {$P$};
+    \node[lit] (bQ)  at (5.1,1.5) {}; \node[lyr,above=1pt of bQ]  {$\neg Q$};
+    \node[lit] (bR)  at (6.0,1.5) {}; \node[lyr,above=1pt of bR]  {$R$};
+    \node[lit] (bS)  at (6.9,1.5) {}; \node[lyr,above=1pt of bS]  {$S$};
+    % Layer S2 (x = +8.4)
+    \node[lit] (cP)  at (8.4,0)  {}; \node[lyr,above=1pt of cP]  {$P$};
+    \node[lit] (cQ)  at (9.3,0)  {}; \node[lyr,above=1pt of cQ]  {$\neg Q$};
+    \node[lit] (cR)  at (10.2,0) {}; \node[lyr,above=1pt of cR]  {$R$};
+    \node[lit] (cS)  at (11.1,0) {}; \node[lyr,above=1pt of cS]  {$S$};
+
+    \draw[thick] (aP) -- (bP); \draw[thick] (bP) -- (cP);
+    \draw[thick] (aR) -- (bR); \draw[thick] (bR) -- (cR);
+    \draw[thick] (aS) -- (bS); \draw[thick] (bS) -- (cS);
+    \draw[thick] (aQ) -- (bQ); \draw[thick] (bQ) -- (cQ);
+    \draw[thick,dashed] (aP) -- (bQ);
+
+    \node[lyr] at (1.35,3.6)  {$S_0$};
+    \node[lyr] at (2.1,2.25)  {$A_0$};
+    \node[lyr] at (5.55,2.1)  {$S_1$};
+    \node[lyr] at (6.3,0.75)  {$A_1$};
+    \node[lyr] at (9.75,0.6)  {$S_2$};
+    \end{tikzpicture}
+    \caption{Grafo de planeación (esquemático): las líneas sólidas verticales son \textit{acciones
+    de persistencia} (un literal verdadero puede seguir siéndolo sin ninguna acción que lo cambie);
+    la línea punteada representa una acción real que conecta una precondición en $S_0$ con un efecto
+    en $S_1$. Cada capa $S_i$ acumula todos los literales alcanzables en $i$ pasos o menos.}
+    \end{figure}
     \item \textbf{Cálculo situacional} (\textit{situation calculus}): representa la planeación
     directamente en LPO mediante un término $do(a,s)$ que denota el estado resultante de ejecutar la
     acción $a$ en la situación $s$ (p. ej. $do(Move(rob,o109,o103),\,init)$). Permite razonar con todo
